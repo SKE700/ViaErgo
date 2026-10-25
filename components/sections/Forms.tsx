@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { buttonClasses } from "@/components/ui/Button";
+import { placeholderLinks } from "@/content/site";
 
 const inputCls =
   "h-12 w-full rounded-xl border border-line bg-white px-4 text-[16px] text-ink placeholder:text-muted/70 transition-colors focus:border-ink/40 focus:outline-2 focus:outline-offset-2 focus:outline-ink";
@@ -20,41 +21,61 @@ function Notice({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Newsletter-Formular. Noch ohne Anbindung: Es werden keine Daten übertragen.
- * Später an den Newsletter-Anbieter (mit Double-Opt-in) anbinden.
+ * Newsletter-Formular mit Brevo (Double-Opt-in über ein Brevo-Anmeldeformular).
+ * Ohne eingetragene Formular-URL in content/site.ts werden keine Daten übertragen.
  */
 export function NewsletterForm({ dark, className }: { dark?: boolean; className?: string }) {
   const id = useId();
-  const [sent, setSent] = useState(false);
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const brevoUrl = placeholderLinks.brevoFormUrl;
 
-  if (sent) {
+  if (state === "sent") {
     return (
       <Notice>
-        <strong className="font-semibold">Fast geschafft.</strong> Hier folgt später die Bestätigungs-E-Mail (Double-Opt-in).
-        <span className="mt-1 block font-mono text-xs text-muted">[PLATZHALTER: Newsletter-Anbieter noch nicht angebunden – es wurden keine Daten übertragen.]</span>
+        <strong className="font-semibold">Fast geschafft.</strong> Bitte bestätige deine Anmeldung über den Link in der E-Mail, die
+        wir dir gerade geschickt haben.
+        {!brevoUrl && (
+          <span className="mt-1 block font-mono text-xs text-muted">[PLATZHALTER: Brevo-Formular noch nicht verbunden – es wurden keine Daten übertragen.]</span>
+        )}
       </Notice>
     );
   }
 
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!brevoUrl) return setState("sent");
+    setState("sending");
+    const data = new FormData();
+    data.set("EMAIL", String(new FormData(e.currentTarget).get("email") ?? ""));
+    data.set("email_address_check", "");
+    data.set("locale", "de");
+    try {
+      // Brevo-Formulare antworten ohne CORS-Header; die Anfrage kommt trotzdem an.
+      await fetch(brevoUrl, { method: "POST", body: data, mode: "no-cors" });
+      setState("sent");
+    } catch {
+      setState("error");
+    }
+  }
+
   return (
-    <form
-      className={className}
-      onSubmit={(e) => {
-        e.preventDefault();
-        setSent(true);
-      }}
-    >
+    <form className={className} onSubmit={onSubmit}>
       <div className="flex flex-col gap-3 sm:flex-row">
         <label htmlFor={`${id}-email`} className="sr-only">
           E-Mail-Adresse
         </label>
         <input id={`${id}-email`} type="email" name="email" required autoComplete="email" placeholder="Deine E-Mail-Adresse" className={cn(inputCls, "sm:flex-1")} />
-        <button type="submit" className={buttonClasses("ink", "lg", "h-12")}>
-          Kostenlos anmelden
+        <button type="submit" disabled={state === "sending"} className={buttonClasses("ink", "lg", "h-12 disabled:opacity-60")}>
+          {state === "sending" ? "Wird gesendet …" : "Kostenlos anmelden"}
         </button>
       </div>
+      {state === "error" && (
+        <p role="alert" className="mt-3 text-sm text-ink">
+          Das hat leider nicht geklappt. Bitte versuche es später noch einmal.
+        </p>
+      )}
       <p className={cn("mt-3 text-sm", dark ? "text-ivory/60" : "text-muted")}>
-        Kein Spam. Jederzeit abbestellbar. Hinweise zum Datenschutz findest du in der{" "}
+        Kein Spam. Jederzeit abbestellbar. Der Versand erfolgt über Brevo. Hinweise zum Datenschutz findest du in der{" "}
         <Link href="/datenschutz" className="underline underline-offset-4 hover:text-ink">
           Datenschutzerklärung
         </Link>

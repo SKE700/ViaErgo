@@ -11,42 +11,44 @@ export default function ImpressumPage() {
     <Container className="max-w-3xl pb-24 pt-14 sm:pt-20">
       <h1 className="text-[clamp(2.2rem,1.6rem+2.6vw,3.4rem)] font-semibold leading-[1.05]">Impressum</h1>
       <p className="mt-4 rounded-xl border border-dashed border-ink/25 bg-white/70 p-4 font-mono text-sm text-muted">
-        Platzhalter – alle Angaben vor Veröffentlichung vervollständigen und rechtlich prüfen lassen.
+        Dummy-Daten – alle Angaben sind fiktiv und müssen vor dem Livegang durch die echten Anbieterdaten ersetzt und rechtlich geprüft werden.
       </p>
       <div className="legal">
         <h2>Angaben gemäß § 5 DDG</h2>
         <p>
-          [NAME / FIRMA]
+          ViaErgo Campus
           <br />
-          [STRASSE UND HAUSNUMMER]
+          Inhaber: Max Mustermann
           <br />
-          [PLZ ORT]
+          Musterstraße 1
+          <br />
+          12345 Musterstadt
         </p>
 
         <h2>Vertreten durch</h2>
-        <p>[VERTRETUNGSBERECHTIGTE PERSON]</p>
+        <p>Max Mustermann</p>
 
         <h2>Kontakt</h2>
         <p>
-          Telefon: [TELEFON]
+          Telefon: 01234 567890
           <br />
-          E-Mail: [E-MAIL-ADRESSE]
+          E-Mail: kontakt@example.com
         </p>
 
         <h2>Registereintrag</h2>
-        <p>[REGISTERGERICHT UND REGISTERNUMMER, falls vorhanden]</p>
+        <p>Kein Eintrag im Handelsregister.</p>
 
         <h2>Umsatzsteuer-ID</h2>
-        <p>[UMSATZSTEUER-IDENTIFIKATIONSNUMMER gemäß § 27a UStG, falls vorhanden]</p>
+        <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: DE000000000</p>
 
         <h2>Berufsbezeichnung und berufsrechtliche Regelungen</h2>
-        <p>[BERUFSBEZEICHNUNG, VERLEIHENDER STAAT, ZUSTÄNDIGE STELLEN, falls zutreffend]</p>
+        <p>Berufsbezeichnung: Ergotherapeut (verliehen in der Bundesrepublik Deutschland). Es gilt das Ergotherapeutengesetz (ErgThG).</p>
 
         <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
-        <p>[NAME, ANSCHRIFT]</p>
+        <p>Max Mustermann, Musterstraße 1, 12345 Musterstadt</p>
 
         <h2>Verbraucherstreitbeilegung</h2>
-        <p>[ANGABE ZUR TEILNAHME AN STREITBEILEGUNGSVERFAHREN VOR EINER VERBRAUCHERSCHLICHTUNGSSTELLE]</p>
+        <p>Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
       </div>
     </Container>
   );

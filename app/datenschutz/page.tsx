@@ -26,7 +26,7 @@ export default function DatenschutzPage() {
 
         <h2>3. Hosting und Server-Logfiles</h2>
         <p>
-          Diese Website wird bei [HOSTING-ANBIETER] betrieben. Beim Aufruf werden technisch notwendige Daten (z. B. IP-Adresse,
+          Diese Website wird bei Hostinger International Ltd. (61 Lordou Vironos Street, 6023 Larnaca, Zypern) betrieben. Beim Aufruf werden technisch notwendige Daten (z. B. IP-Adresse,
           Zeitpunkt, aufgerufene Seite, Browsertyp) in Server-Logfiles verarbeitet. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
           Speicherdauer: [SPEICHERDAUER].
         </p>
@@ -53,7 +53,7 @@ export default function DatenschutzPage() {
         <h2>7. Newsletter</h2>
         <p>
           Für den Newsletter nutzen wir das Double-Opt-in-Verfahren. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a
-          DSGVO), die du jederzeit widerrufen kannst. Versanddienstleister: [NEWSLETTER-ANBIETER].
+          DSGVO), die du jederzeit widerrufen kannst. Versanddienstleister ist Brevo (Sendinblue GmbH, Köpenicker Straße 126, 10179 Berlin). [AUFTRAGSVERARBEITUNGSVERTRAG MIT BREVO, SPEICHERDAUER UND ÖFFNUNGS-/KLICKTRACKING PRÜFEN]
         </p>
 
         <h2>8. Kursbuchung über externe Anbieter</h2>
