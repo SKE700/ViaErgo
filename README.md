@@ -12,6 +12,15 @@ npm run build      # Produktions-Build (alle Seiten statisch)
 npm run typecheck
 ```
 
+## Veröffentlichen
+
+```bash
+npm run deploy     # baut die Seite und aktualisiert den Branch "deploy"
+```
+
+Hostinger holt den Branch `deploy` per Git-Deployment nach `public_html`
+(hPanel → Git oder über die Hostinger-API „Deploy website Git repository“).
+
 ## Struktur
 
 - `app/` – Seiten: `/`, `/mutter-kind`, `/kurse/[slug]`, `/praxis`, `/ueber-daniel`, `/ueber-viaergo`, `/kontakt`, `/newsletter`, `/impressum`, `/datenschutz`, dazu `sitemap.ts`, `robots.ts`, `opengraph-image.tsx`
