@@ -1,0 +1,8 @@
+:HL["/_next/static/chunks/2e9oce8k5-_62.css","style"]
+:HL["/_next/static/media/Inter-s.p.0gsaq8ukbf34m.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/InterTight-s.p.1_fsb17gxmapx.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/brand/viaergo-fuchs.png","image"]
+:HL["/brand/viaergo-schriftzug.png","image"]
+2:[["children",{"s":"__PAGE__","h":160}]]
+1:[["children",{"s":"datenschutz","h":64,"c":"$Q2"}]]
+0:{"b":"XegbQI85cxiMkHARgrhXM","t":{"t":{"s":"","h":16,"c":"$Q1"}}}

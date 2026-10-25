@@ -1,0 +1,5 @@
+User-Agent: *
+Allow: /
+
+Host: https://viaergo.de
+Sitemap: https://viaergo.de/sitemap.xml
