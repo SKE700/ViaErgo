@@ -18,6 +18,7 @@ npm run typecheck
 - `content/` – alle Inhalte als Daten: `courses.ts` (5 Kurse), `praxis.ts`, `faq.ts`, `site.ts`
 - `components/` – `layout/` (Header, Footer, Cookie-Hinweis), `ui/` (Button, Primitives, Logo), `sections/` (Kurskarte, Formulare, Visuals, Blöcke), `motion/`
 - `app/globals.css` – Design-Tokens (Farben, Fonts, Easing)
+- `public/brand/` – Logo (Fuchs-Signet, Schriftzug, Gesamtlogo), dazu `app/icon.png` und `app/apple-icon.png`
 
 Neuer Kurs: Objekt in `content/courses.ts` ergänzen – Kursseite, Sitemap und Übersichten entstehen automatisch.
 

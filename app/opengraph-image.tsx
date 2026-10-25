@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { site } from "@/content/site";
 
@@ -6,7 +8,9 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const dynamic = "force-static";
 
-export default function OgImage() {
+export default async function OgImage() {
+  const fox = `data:image/png;base64,${(await readFile(join(process.cwd(), "public/brand/viaergo-fuchs-512.png"))).toString("base64")}`;
+  const wordmark = `data:image/png;base64,${(await readFile(join(process.cwd(), "public/brand/viaergo-schriftzug.png"))).toString("base64")}`;
   return new ImageResponse(
     (
       <div
@@ -21,12 +25,11 @@ export default function OgImage() {
           color: "#22252a",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 34, fontWeight: 600 }}>
-          <div style={{ display: "flex", position: "relative", width: 64, height: 44 }}>
-            <div style={{ position: "absolute", left: 0, width: 44, height: 44, borderRadius: 44, background: "#5b8a7d" }} />
-            <div style={{ position: "absolute", left: 20, width: 44, height: 44, borderRadius: 44, background: "rgba(85,82,194,0.8)" }} />
-          </div>
-          ViaErgo Campus
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={fox} width={96} height={96} alt="" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={wordmark} width={344} height={44} alt="" />
         </div>
         <div style={{ fontSize: 72, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2, maxWidth: 960 }}>{site.claim}</div>
         <div style={{ fontSize: 28, color: "#5c6068" }}>Mutter-Kind-Fortbildungen · KI, Organisation und Marketing</div>

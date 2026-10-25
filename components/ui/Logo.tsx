@@ -1,22 +1,23 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
+/* eslint-disable @next/next/no-img-element -- statischer Export, Bilder sind bereits optimiert */
+
 export function LogoMark({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden viewBox="0 0 32 32" className={cn("size-7", className)}>
-      <circle cx="12.5" cy="16" r="8.5" className="fill-mk-500" />
-      <circle cx="19.5" cy="16" r="8.5" className="fill-px-500" fillOpacity="0.85" style={{ mixBlendMode: "multiply" }} />
-    </svg>
-  );
+  return <img src="/brand/viaergo-fuchs.png" alt="" width={121} height={112} className={cn("h-9 w-auto", className)} />;
 }
 
 export function Logo({ className, light }: { className?: string; light?: boolean }) {
   return (
-    <Link href="/" aria-label="ViaErgo Campus – Startseite" className={cn("inline-flex items-center gap-2.5 rounded-md", className)}>
+    <Link href="/" aria-label="ViaErgo Campus – Startseite" className={cn("inline-flex shrink-0 items-center gap-2 rounded-md", className)}>
       <LogoMark />
-      <span className={cn("font-display text-[17px] font-semibold tracking-[-0.02em]", light ? "text-ivory" : "text-ink")}>
-        ViaErgo <span className={cn("font-medium", light ? "text-ivory/60" : "text-muted")}>Campus</span>
-      </span>
+      <img
+        src="/brand/viaergo-schriftzug.png"
+        alt=""
+        width={562}
+        height={72}
+        className={cn("h-[17px] w-auto sm:h-[19px]", light && "brightness-0 invert")}
+      />
     </Link>
   );
 }
