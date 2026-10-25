@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* ViaErgo Campus – Design-Tokens */
+@theme {
+  /* Basis */
+  --color-ivory: #faf8f3;
+  --color-surface: #f3efe7;
+  --color-line: #e5dfd3;
+  --color-ink: #22252a;
+  --color-muted: #5c6068;
+
+  /* Mutter-Kind: Salbei-Teal */
+  --color-mk-50: #f1f6f3;
+  --color-mk-100: #e4ede8;
+  --color-mk-200: #c9dbd2;
+  --color-mk-500: #5b8a7d;
+  --color-mk-600: #3f6f63;
+  --color-mk-700: #2f574d;
+
+  /* Praxis-Schiene: Indigo */
+  --color-px-50: #f4f3fb;
+  --color-px-100: #eae9f7;
+  --color-px-200: #d3d1f0;
+  --color-px-500: #5552c2;
+  --color-px-600: #3b3a99;
+  --color-px-700: #2d2c7a;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-calm: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    @apply bg-ivory font-sans text-ink antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-balance;
+    letter-spacing: -0.022em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    @apply bg-mk-200 text-ink;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* Organische Formen im Hero – sehr langsam, abschaltbar */
+@keyframes drift-a {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate(14px, -10px) rotate(5deg) scale(1.04); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-16px, 12px) rotate(-6deg); }
+}
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.blob-a,
+.blob-b,
+.blob-c {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.blob-a { animation: drift-a 22s var(--ease-calm) infinite; }
+.blob-b { animation: drift-b 26s var(--ease-calm) infinite; }
+.blob-c { animation: drift-a 30s var(--ease-calm) infinite reverse; }
+.float-soft { animation: float-soft 9s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .blob-a,
+  .blob-b,
+  .blob-c,
+  .float-soft {
+    animation: none;
+  }
+}
+
+/* Rechtstexte */
+.legal h2 {
+  @apply mt-12 mb-3 text-xl font-semibold text-ink;
+}
+.legal h3 {
+  @apply mt-8 mb-2 text-base font-semibold text-ink;
+}
+.legal p,
+.legal li {
+  @apply text-[16px] leading-relaxed text-muted;
+}
+.legal p + p {
+  @apply mt-3;
+}
+.legal ul {
+  @apply mt-3 list-disc space-y-1 pl-5;
+}
+.legal a {
+  @apply text-ink underline decoration-line underline-offset-4 hover:decoration-ink;
+}
