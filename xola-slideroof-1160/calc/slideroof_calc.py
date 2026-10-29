@@ -130,6 +130,11 @@ class Params:
     alu_f0_mpa: float = 150.0               # 6060/6063-T66 ~ 150-160; 6082-T6: 250
     gamma_m: float = 1.1
 
+    # --- Optionales drittes Modul fest in der Kassette (liegt eingefahren unter den Fluegeln) ---
+    cassette_module: bool = False
+    cassette_module_level_mm: float = 40.0  # zusaetzliche Kassettenhoehe fuer die dritte Ebene
+    cassette_module_support_kg: float = 1.8 # Rippen, Klebung, EPDM, Entwaesserung
+
     # --- Optionaler Stoffflugel ---
     fabric_wing: bool = False
     fabric_extra_area_m2: float = 2.0
@@ -170,7 +175,9 @@ def geometry(p: Params) -> dict:
                   - x_foot / 1000 * math.sin(th))
     foot_top_z_flat = p.mount_height_m - p.outer_wing_drop_mm / 1000 - 0.0
 
-    solar_area = p.n_modules * p.module_len_y_mm * p.module_wid_x_mm / 1e6
+    n_mod = p.n_modules + (1 if p.cassette_module else 0)
+    cas_h = p.cassette_height_mm + (p.cassette_module_level_mm if p.cassette_module else 0.0)
+    solar_area = n_mod * p.module_len_y_mm * p.module_wid_x_mm / 1e6
     roof_area = outer_x1 / 1000 * inner_w_y / 1000
     return {
         "wing_len_x_mm": wing_x,
@@ -178,8 +185,10 @@ def geometry(p: Params) -> dict:
         "outer_wing_width_y_mm": outer_w_y,
         "cassette_x_mm": cas_x,
         "cassette_y_mm": cas_y,
-        "cassette_height_mm": p.cassette_height_mm,
-        "vehicle_height_increase_mm": p.cassette_height_mm + p.bracket_offset_mm,
+        "cassette_height_mm": cas_h,
+        "vehicle_height_increase_mm": cas_h + p.bracket_offset_mm,
+        "cassette_module_fits": (cas_x - p.cassette_front_beam_mm - p.cassette_rear_beam_mm >= p.module_wid_x_mm
+                                 and cas_y - 2 * p.cassette_side_wall_mm >= p.module_len_y_mm),
         "stroke_inner_mm": inner_x0 - stowed_x0,
         "stroke_outer_mm": outer_x0 - stowed_x0,
         "inner_wing_x_mm": (inner_x0, inner_x1),
@@ -200,7 +209,9 @@ def geometry(p: Params) -> dict:
         "foot_max_folded_len_m": outer_w_y / 2 / 1000 - 0.05,
         "solar_area_m2": solar_area,
         "roof_area_m2": roof_area,
-        "pv_wp": p.n_modules * p.module_wp,
+        "pv_wp": n_mod * p.module_wp,
+        "n_modules_total": n_mod,
+        "pv_wp_stowed": p.module_wp,                       # nur der obere Innenfluegel liegt frei
         "x_strut_mm": -(cas_x - p.strut_from_inner_end_mm),
         "roller_spacing_mm": p.tail_mm - 2 * p.roller_inset_mm,
     }
@@ -227,7 +238,7 @@ def masses(p: Params, g: dict) -> dict:
                 + 2 * cx * p.cassette_side_kg_m + cx * cy * p.cassette_underside_kg_m2
                 + cx * p.cassette_stringer_kg_m + p.cassette_hardware_kg)
     items = {
-        "Module (2x)": p.n_modules * p.module_mass_kg,
+        f"Module Fluegel ({p.n_modules}x)": p.n_modules * p.module_mass_kg,
         "Traegerrahmen Innenfluegel": inner_frame,
         "Traegerrahmen Aussenfluegel": outer_frame,
         "Kassette inkl. Laufprofile/Gelenke": cassette,
@@ -237,6 +248,10 @@ def masses(p: Params, g: dict) -> dict:
         "Markisenhalter-Adapter": p.n_brackets * p.bracket_adapter_kg,
         "E-Ketten, Leitungen, Stecker": p.cabling_kg,
     }
+    fixed = 0.0
+    if p.cassette_module:
+        fixed = p.module_mass_kg + p.cassette_module_support_kg
+        items["Kassettenmodul fest inkl. Auflage"] = fixed
     if p.fabric_wing:
         items["Stofffluegel (optional)"] = p.fabric_mass_kg
     total = sum(items.values())
@@ -249,7 +264,7 @@ def masses(p: Params, g: dict) -> dict:
         "outer_wing_kg": outer_wing,
         "outer_wing_with_feet_kg": outer_wing + p.n_feet * p.foot_mass_kg
                                    + (p.fabric_mass_kg if p.fabric_wing else 0.0),
-        "cassette_kg": cassette + p.n_struts * p.strut_mass_kg * 0.5,
+        "cassette_kg": cassette + fixed + p.n_struts * p.strut_mass_kg * 0.5,
         "inner_frame_kg": inner_frame,
         "outer_frame_kg": outer_frame,
     }
@@ -392,7 +407,7 @@ def cross_beam(p: Params, g: dict, st: dict) -> dict:
     unter Winddruck + Eigengewicht, Einfeldtraeger mit Gleichstreckenlast."""
     span = g["outer_wing_width_y_mm"]
     trib = g["wing_len_x_mm"] / 2 / 1000                     # m Einzugsbreite
-    p_tot = p.cp_down * st["q_Pa"] + p.module_mass_kg * G / (g["solar_area_m2"] / p.n_modules)
+    p_tot = p.cp_down * st["q_Pa"] + p.module_mass_kg * G / (p.module_len_y_mm * p.module_wid_x_mm / 1e6)
     w = p_tot * trib / 1000                                  # N/mm
     M = w * span ** 2 / 8                                    # Nmm
     sigma = M / (p.cross_beam_i_mm4 / (p.cross_beam_h_mm / 2))
@@ -480,7 +495,10 @@ def report(r: dict, md: bool = False) -> str:
                    "Starrkoerper. Ersetzt keine statische Berechnung durch einen Fachplaner.")
 
     h("Ausfahrgeometrie"); table_head()
-    row("PV-Leistung", f"{g['pv_wp']:.0f} Wp")
+    row("PV-Leistung ausgefahren / eingefahren (Fahrt)", f"{g['pv_wp']:.0f} / {g['pv_wp_stowed']:.0f} Wp")
+    row("Anzahl Module / MPPT", f"{g['n_modules_total']}")
+    if p["cassette_module"]:
+        row("Drittes Modul passt in Kassette", "ja" if g["cassette_module_fits"] else "NEIN")
     row("Solarflaeche (Module)", f"{g['solar_area_m2']:.2f} m2")
     row("Dachflaeche ausgefahren (inkl. Rahmen)", f"{g['roof_area_m2']:.2f} m2")
     row("Ausladung ab Fahrzeugwand", f"{g['projection_mm']:.0f} mm")

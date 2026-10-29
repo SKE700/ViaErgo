@@ -75,6 +75,21 @@ class StaticsTest(unittest.TestCase):
         self.assertAlmostEqual(st["q_Pa"], 0.5 * 1.25 * 100)
 
 
+class CassetteModuleTest(unittest.TestCase):
+    def test_third_module_adds_power_and_fits(self):
+        r = run(replace(Params(), cassette_module=True))
+        self.assertEqual(r["geometry"]["pv_wp"], 1740)
+        self.assertEqual(r["geometry"]["pv_wp_stowed"], 580)
+        self.assertTrue(r["geometry"]["cassette_module_fits"])
+        self.assertGreater(r["masses"]["total_kg"], run(Params())["masses"]["total_kg"])
+
+    def test_third_module_reduces_tilt_moment(self):
+        # Gewicht hinter der Drehachse wirkt als Gegengewicht
+        a = run(Params())["statics"]["Wx_Nm"]
+        b = run(replace(Params(), cassette_module=True))["statics"]["Wx_Nm"]
+        self.assertLess(b, a)
+
+
 class ElectricalTest(unittest.TestCase):
     def test_cold_voc_higher_and_below_100v(self):
         el = run(Params())["electrical"]

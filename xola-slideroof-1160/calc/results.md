@@ -6,7 +6,8 @@
 
 | Groesse | Wert |
 |---|---:|
-| PV-Leistung | 1160 Wp |
+| PV-Leistung ausgefahren / eingefahren (Fahrt) | 1160 / 580 Wp |
+| Anzahl Module / MPPT | 2 |
 | Solarflaeche (Module) | 5.51 m2 |
 | Dachflaeche ausgefahren (inkl. Rahmen) | 6.07 m2 |
 | Ausladung ab Fahrzeugwand | 2498 mm |
@@ -28,7 +29,7 @@
 
 | Groesse | Wert |
 |---|---:|
-| Module (2x) | 18.2 kg |
+| Module Fluegel (2x) | 18.2 kg |
 | Traegerrahmen Innenfluegel | 10.1 kg |
 | Traegerrahmen Aussenfluegel | 6.9 kg |
 | Kassette inkl. Laufprofile/Gelenke | 16.1 kg |

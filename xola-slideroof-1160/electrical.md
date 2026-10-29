@@ -96,7 +96,15 @@ Die Leitungen in den Ketten sind in Kammern getrennt: Modul 1 ±, Modul 2 ±, PE
 | Windsensor (optional) | Schalensternanemometer an der Kassettenstirn, Auswertung 3-s-Böe. Ab 8 m/s Vorwarnung (Ton/App), ab 10,8 m/s Daueralarm „JETZT EINFAHREN“. Beim manuellen System gibt es keine Automatik. |
 | Energiebedarf | < 5 mA Ruhestrom, Versorgung aus Bordbatterie über 1-A-Sicherung |
 
-## 7. Motorisierte Ausbaustufe (später)
+## 7. Variante 1740 (drittes Modul in der Kassette)
+
+* Modul 3 liegt fest. Seine Leitung geht ohne Energiekette über Zugentlastung direkt zum Klemmkasten X1.
+* Es braucht einen dritten Strang mit eigenem MPPT 3, Trenner Q3, Überspannungsschutz F3 und
+  Batteriesicherung F13, dimensioniert wie Modul 1/2.
+* Eingefahren ist Modul 3 voll verschattet. Der MPPT geht dann in Standby, Rückströme gibt es
+  wegen der getrennten Stränge keine.
+
+## 8. Motorisierte Ausbaustufe (später)
 
 Ein 12-V-Rohr- oder Getriebemotor, etwa 20 Nm und IP67, wird auf den Kurbelsechskant gesetzt.
 Dazu kommen Endschalter und Stromüberwachung als Klemmschutz. Bei Wind ≥ 10,8 m/s fährt die

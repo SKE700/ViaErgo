@@ -27,6 +27,17 @@ Herstellernamen sind Beispiele für die Bauart, keine Festlegung.
 
 Masse Trägerrahmen Innenflügel ≈ **10,1 kg**, Außenflügel ≈ **6,9 kg** (inkl. Dichtung, Klebung, Beschläge).
 
+## 1a. Option Variante 1740: Kassettenmodul
+
+| Pos | Benennung | Mge | Material / Typ | Abmessung | Verbindung | Masse |
+|---|---|---:|---|---|---|---:|
+| 1a.1 | Solarmodul Xola 580 Wp, fest | 1 | wie 1.1 | 2.260 × 1.219 × 3 | Klebung auf 1a.2 | 9,1 kg |
+| 1a.2 | Auflagerost im Kassettenboden (Rippen, Klebeband, EPDM-Kante, Ablaufschlitze) | 1 | EN AW-6063-T6 / EPDM | 5 Rippen 30 × 15 × 1,2 | Blindniete an Seitenwände/Stringer | 1,8 kg |
+| 1a.3 | Gleitpads Unterseite Außenflügel (Kratzschutz) | 8 | UHMW-PE | 40 × 20 × 3 | geklebt | – |
+| 1a.4 | MPPT, Trenner, SPD, Sicherung für Strang 3 | 1 Satz | wie 4.9–4.12 | – | – | fahrzeugseitig |
+
+Kassettenhöhe +40 mm (150 mm), Gesamtmasse ≈ **73 kg**.
+
 ## 2. Baugruppe Kassette
 
 | Pos | Benennung | Mge | Material / Typ | Abmessung | Verbindung | Masse |

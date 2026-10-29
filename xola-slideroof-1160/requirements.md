@@ -22,6 +22,7 @@ Status: ✔ erfüllt · ◐ mit Einschränkung/Interpretation · ✘ nicht erfü
 | E-04 | DC-Trenner je Modul, Überspannungsschutz, Potentialausgleich | – | ✔ | electrical.md |
 | E-05 | Kabelführung geschützt, Energiekette, Zugentlastung, IP68, MC4-kompatibel | – | ✔ | 2 liegende E-Ketten |
 | E-06 | Laden während der Fahrt | (neu) | ✔ | Der obere Flügel liegt frei: 580 Wp eingefahren |
+| E-08 | Variante 1740: drittes Modul fest in der Kassette | 1.740 Wp ausgefahren | ✔ optional | +11 kg, +40 mm Höhe, 3. MPPT (README) |
 | E-07 | Elektrische Moduldaten (Voc, Isc, TK) | – | ? | **Fehlen im Datenblatt.** Gerechnet wurde mit Annahmen: Voc 52 V, Isc 14,3 A, TK −0,25 %/K |
 
 ## 3. Mechanik und Geometrie

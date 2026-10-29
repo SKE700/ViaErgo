@@ -308,6 +308,15 @@ Mit blockierter Strebe trägt der Kassettenhebel den Sog, die Halter werden dann
 
 ---
 
+## 6a. Variante 1740: Modul im Kassettenboden
+
+Unter den beiden Flügeln liegt eine dritte Ebene mit einem fest eingeklebten Modul auf einem
+Rippenrost. Die Kassette wird dadurch 40 mm höher (150 mm). Beim Kippen auf 5–10° neigt sich das
+Modul mit nach außen. Das Wasser läuft zur Kassettenfront und muss dort durch Ablaufschlitze in
+der Frontschwelle in die Rinne unter der Austrittskante. Das Gewicht hinter der Drehachse wirkt als
+Gegengewicht: Das Kippmoment sinkt von 341 auf 262 Nm, die Zug-Gasfedern werden kleiner
+(2 × 63 N statt 2 × 82 N). Ergebnisse in `calc/results_1740.md`.
+
 ## 7. Lastannahmen und Ergebnisse (Auszug)
 
 | Lastfall | Wert |

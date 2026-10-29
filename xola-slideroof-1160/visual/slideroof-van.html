@@ -76,8 +76,8 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
 <div class="wrap">
   <header>
     <div class="eyebrow">Konzeptvisualisierung · maßstäblich · Sprinter L2H2-Klasse</div>
-    <h1>Xola SlideRoof 1160</h1>
-    <p class="lede">Zwei 580-Wp-Module fahren wie bei einem Ausziehtisch aus der flachen Dachkassette, werden auf zwei Füße gestellt und um 7° nach außen geneigt. So entsteht ein 2,50 m tiefes Solar-Vordach über der Schiebetür.</p>
+    <h1 id="title">Xola SlideRoof 1740</h1>
+    <p class="lede">Zwei 580-Wp-Module fahren wie bei einem Ausziehtisch aus der flachen Dachkassette, werden auf zwei Füße gestellt und um 7° nach außen geneigt. So entsteht ein 2,50 m tiefes Solar-Vordach über der Schiebetür. Ein drittes Modul liegt fest im Kassettenboden und wird frei, sobald die Flügel ausgefahren sind.</p>
   </header>
 
   <div class="stage">
@@ -95,8 +95,9 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
       <button class="play" id="play">Einfahren</button>
       <div class="slider">
         <input type="range" id="phase" min="0" max="1000" value="1000" aria-label="Ablauf von eingefahren bis Betrieb">
-        <div class="phase" id="phase-label">Betrieb · 7° Neigung · 1.160 Wp</div>
+        <div class="phase" id="phase-label">Betrieb · 7° Neigung · 1.740 Wp</div>
       </div>
+      <label class="toggle"><input type="checkbox" id="fixed" checked> 3. Modul in der Kassette</label>
       <label class="toggle"><input type="checkbox" id="labels" checked> Beschriftung</label>
     </div>
   </div>
@@ -105,8 +106,8 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     <section>
       <h2>Ablauf am Stellplatz</h2>
       <ol class="steps" id="steps">
-        <li data-i="0"><span><strong>Fahrstellung</strong>Kassette verriegelt, nur 140 mm Aufbau. Das obere Modul liegt frei und lädt während der Fahrt.</span></li>
-        <li data-i="1"><span><strong>Auskurbeln</strong>Beide Flügel laufen im Synchronlauf 2:1 aus. Am Ende fallen die Bolzen ein.</span></li>
+        <li data-i="0"><span><strong>Fahrstellung</strong>Kassette verriegelt, 180 mm Aufbau. Das obere Modul liegt frei und lädt während der Fahrt; die zwei Module darunter sind geschützt.</span></li>
+        <li data-i="1"><span><strong>Auskurbeln</strong>Beide Flügel laufen im Synchronlauf 2:1 aus und geben das Kassettenmodul frei. Am Ende fallen die Bolzen ein.</span></li>
         <li data-i="2"><span><strong>Füße ausklappen</strong>Die zwei Füße klappen von unter dem Außenflügel nach unten.</span></li>
         <li data-i="3"><span><strong>Füße ausziehen, Heringe setzen</strong>Teleskop 2,24–2,84 m, jede Seite einzeln einstellbar.</span></li>
         <li data-i="4"><span><strong>Neigung einstellen</strong>Füße kürzen: Das Dach kippt um die Halterachse auf 5, 7 oder 10°, und Regen läuft nach außen ab.</span></li>
@@ -115,14 +116,15 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     <section>
       <h2>Kennwerte</h2>
       <dl class="specs">
-        <dt>PV-Leistung</dt><dd>2 × 580 = 1.160 Wp</dd>
-        <dt>Modulfläche</dt><dd>5,51 m²</dd>
+        <dt>PV-Leistung ausgefahren</dt><dd id="sp-pv">3 × 580 = 1.740 Wp</dd>
+        <dt>PV-Leistung bei Fahrt</dt><dd>580 Wp</dd>
+        <dt>Modulfläche</dt><dd id="sp-area">8,26 m²</dd>
         <dt>Ausladung × Breite</dt><dd>2,50 × 2,43 m</dd>
-        <dt>Kassette (Dach)</dt><dd>1,49 × 2,49 m · 110 mm</dd>
-        <dt>Fahrzeughöhe zusätzlich</dt><dd>+140 mm</dd>
+        <dt>Kassette (Dach)</dt><dd id="sp-cas">1,49 × 2,49 m · 150 mm</dd>
+        <dt>Fahrzeughöhe zusätzlich</dt><dd id="sp-h">+180 mm</dd>
         <dt>Neigung</dt><dd>0 / 5 / 7 / 10°</dd>
         <dt>Stützfüße</dt><dd>2,24 – 2,84 m</dd>
-        <dt>Gewicht (Alu / CFK)</dt><dd>≈ 62 / 48 kg</dd>
+        <dt>Gewicht (Alu)</dt><dd id="sp-kg">≈ 73 kg</dd>
         <dt>Betrieb bis</dt><dd>Bft 5, Heringe gesetzt</dd>
       </dl>
     </section>
@@ -153,7 +155,7 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     side: { yaw: -90, pitch: 0 },
     top:  { yaw: -90, pitch: 90 }
   };
-  let view = "iso", cam = { ...VIEWS.iso }, s = 1, showLabels = true;
+  let view = "iso", cam = { ...VIEWS.iso }, s = 1, showLabels = true, fixedModule = true;
   let anim = null, colors = {};
 
   const canvas = document.getElementById("scene");
@@ -254,15 +256,27 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     const faces = [];
     const anchors = {};
     const yC0 = G.casY0, yC1 = G.casY0 + G.casLen;
-    const zb = G.casZb, zt = G.casZb + G.casH;
+    const zo = fixedModule ? 40 : 0;                     // dritte Ebene macht die Kassette 40 mm hoeher
+    const zb = G.casZb, zt = G.casZb + G.casH + zo;
 
     // Kassette (kippt mit)
     faces.push(...box(G.casX0, G.casX0 + 25, yC0, yC1, zb, zt, colors.alu, T, { sub: 400 }));
     faces.push(...box(G.casX0 + 25, 0, yC0, yC0 + 25, zb, zt, colors.alu, T, { sub: 400 }));
     faces.push(...box(G.casX0 + 25, 0, yC1 - 25, yC1, zb, zt, colors.alu, T, { sub: 400 }));
-    faces.push(...box(G.casX0 + 25, 0, yC0 + 25, yC1 - 25, zb, zb + 6, colors.alu, T, { sub: 400 }));
+    // Boden: mit Kassettenmodul ohne Deckflaeche (das Modul liegt darauf, sonst Ueberlappung im Maler-Algorithmus)
+    faces.push(...box(G.casX0 + 25, 0, yC0 + 25, yC1 - 25, zb, zb + 6, colors.alu, T, { sub: 400 }).filter((_, i) => !(fixedModule && i === 1)));
     faces.push(...box(-35, 0, yC0 + 25, yC1 - 25, zb, zb + 16, colors.alu, T, { sub: 400 }));
     anchors.cassette = T([G.casX0 + 12, yC0 + 300, zt]);
+
+    // Optional: drittes Modul fest im Kassettenboden
+    if (fixedModule) {
+      const fx0 = -1464 + (1429 - G.modX) / 2, fx1 = fx0 + G.modX;
+      const fy0 = (yC0 + yC1) / 2 - G.modY / 2, fy1 = fy0 + G.modY;
+      const fz = zb + 30;
+      const pts = [[fx0, fy0, fz], [fx1, fy0, fz], [fx1, fy1, fz], [fx0, fy1, fz]].map(T);
+      faces.push({ pts, n: norm(cross(sub(pts[1], pts[0]), sub(pts[3], pts[0]))), color: colors.module, module: true, cells: [12, 12] });
+      anchors.fixed = T([(fx0 + fx1) / 2 - 250, (fy0 + fy1) / 2 - 500, fz]);
+    }
 
     // Fluegel
     const xi0 = G.stow0 + ph.f * G.strokeInner;
@@ -286,13 +300,13 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
       anchors[key] = T([(mx0 + mx1) / 2, (my0 + my1) / 2, z]);
       return { x0, y0, y1 };
     }
-    wing(xo0, yo0, yo1, 2798, "outer");
-    wing(xi0, yi0, yi1, 2838, "inner");
+    wing(xo0, yo0, yo1, 2798 + zo, "outer");
+    wing(xi0, yi0, yi1, 2838 + zo, "inner");
 
     // Regenrinne an der Aussenkante
     const xe = xo0 + G.wingLen;
-    faces.push(...box(xe, xe + 40, yo0, yo1, 2795, 2822, colors.alu, T, { sub: 400 }));
-    anchors.front = T([xe + 40, (yo0 + yo1) / 2, 2810]);
+    faces.push(...box(xe, xe + 40, yo0, yo1, 2795 + zo, 2822 + zo, colors.alu, T, { sub: 400 }));
+    anchors.front = T([xe + 40, (yo0 + yo1) / 2, 2810 + zo]);
 
     // Markisenhalter (fest am Fahrzeug)
     [150, 850, 1640, 2340].forEach(dy => faces.push(...box(0, 45, yC0 + dy, yC0 + dy + 60, 2640, 2795, colors.vanline)));
@@ -309,7 +323,7 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     // Stuetzfuesse
     if (ph.f > 0.98) {
       [[yo0 + 60, 1], [yo1 - 60, -1]].forEach(([y, sgn], i) => {
-        const hinge = T([xe - 30, y, 2796]);
+        const hinge = T([xe - 30, y, 2796 + zo]);
         const a = ph.g * 90 * D;
         const dir = norm([0, sgn * Math.cos(a), -Math.sin(a)]);
         const full = hinge[2] - 12;
@@ -339,13 +353,13 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     for (const x of [-2000, 0]) for (const y of [0, G.vanL]) for (const z of [0, G.roofZ]) vanBox.push(toGround([x, y, z]));
     shadows.push(hull(vanBox));
     const wingPts = [];
-    [[xi0, yi0, yi1, 2868], [xo0, yo0, yo1, 2828]].forEach(([x0, y0, y1, z]) => {
+    [[xi0, yi0, yi1, 2868 + zo], [xo0, yo0, yo1, 2828 + zo]].forEach(([x0, y0, y1, z]) => {
       const pts = [[x0, y0, z], [x0 + G.wingLen, y0, z], [x0 + G.wingLen, y1, z], [x0, y1, z]].map(T).map(toGround);
       shadows.push(hull(pts));
     });
     shadows.push(hull([[px - 150, py - 110], [px + 150, py + 110], [px + 150, py - 110], [px - 150, py + 110]].map(([x, y]) => toGround([x, y, 1800])).concat([[px - 150, py - 110], [px + 150, py + 110], [px + 150, py - 110], [px - 150, py + 110]])));
 
-    const front = T([xe, yC0, 2822]);
+    const front = T([xe, yC0, 2822 + zo]);
     return { faces, anchors, shadows, ph, frontX: front[0], reach: xe, yC0 };
   }
 
@@ -544,12 +558,13 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     const ph = sc.ph;
     list.push(["inner", ph.f < 0.02 ? "Modul 1 · 580 Wp · lädt bei Fahrt" : "Innenflügel · Modul 1 · 580 Wp"]);
     if (ph.f > 0.55) list.push(["outer", "Außenflügel · Modul 2 · 580 Wp"]);
-    list.push(["cassette", "Kassette · 110 mm hoch"]);
+    list.push(["cassette", "Kassette · " + (fixedModule ? 150 : 110) + " mm hoch"]);
+    if (fixedModule && ph.f > 0.6) list.push(["fixed", "Kassettenmodul fest · 580 Wp"]);
     if (view !== "top") list.push(["pivot", "Drehachse auf Markisenhalter"]);
     if (ph.e > 0.3 && view !== "top") list.push(["foot", "Stützfuß 2,24–2,84 m"]);
     if (view !== "top") list.push(["person", "1,80 m"]);
     if (ph.t > 0.5 && view !== "top") list.push(["front", "Rinne · " + ph.t.toFixed(0) + "° Gefälle"]);
-    if (W < 600) { const keep = ["inner", "outer", "foot", "person"]; for (let i = list.length - 1; i >= 0; i--) if (!keep.includes(list[i][0])) list.splice(i, 1); }
+    if (W < 600) { const keep = ["inner", "outer", "fixed", "foot"]; for (let i = list.length - 1; i >= 0; i--) if (!keep.includes(list[i][0])) list.splice(i, 1); }
 
     // Bildschirm-Schwerpunkt fuer Ausweichrichtung
     const pts = list.map(([k]) => scr(sc.anchors[k]));
@@ -592,7 +607,7 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     if (p.g < 1) return [2, "Füße ausklappen"];
     if (p.e < 1) return [3, "Füße ausziehen · Heringe setzen"];
     if (p.t < 6.99) return [4, `Neigung einstellen · ${p.t.toFixed(1).replace(".", ",")}°`];
-    return [5, "Betrieb · 7° Neigung · 1.160 Wp"];
+    return [5, "Betrieb · 7° Neigung · " + (fixedModule ? "1.740" : "1.160") + " Wp"];
   }
   function updateUI() {
     const [i, txt] = phaseText(s);
@@ -619,6 +634,17 @@ dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right;
     anim = { id: requestAnimationFrame(step) };
   });
   slider.addEventListener("input", () => { if (anim) { cancelAnimationFrame(anim.id); anim = null; } s = slider.value / 1000; frame(); });
+  const specs = {
+    true:  { pv: "3 × 580 = 1.740 Wp", area: "8,26 m²", cas: "1,49 × 2,49 m · 150 mm", h: "+180 mm", kg: "≈ 73 kg" },
+    false: { pv: "2 × 580 = 1.160 Wp", area: "5,51 m²", cas: "1,49 × 2,49 m · 110 mm", h: "+140 mm", kg: "≈ 62 kg" }
+  };
+  document.getElementById("fixed").addEventListener("change", e => {
+    fixedModule = e.target.checked;
+    document.getElementById("title").textContent = fixedModule ? "Xola SlideRoof 1740" : "Xola SlideRoof 1160";
+    const sp = specs[fixedModule];
+    ["pv", "area", "cas", "h", "kg"].forEach(k => document.getElementById("sp-" + k).textContent = sp[k]);
+    frame();
+  });
   document.getElementById("labels").addEventListener("change", e => { showLabels = e.target.checked; frame(); });
 
   const vb = { iso: "v-iso", rear: "v-rear", side: "v-side", top: "v-top" };

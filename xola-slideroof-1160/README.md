@@ -16,9 +16,11 @@ an der Markisenposition aus. Sie bilden ein 2,50 m ausladendes PV-Vordach mit **
 | [mechanics.md](mechanics.md) | Ansichten und Schnitte, Teleskopmechanik, Modulträger, Kassette und Adapter, Abdichtung, Stützfüße, Lastpfade, Bedienablauf |
 | [electrical.md](electrical.md) | PV-Schema, MPPT, Trenner, Überspannungsschutz, Potentialausgleich, Energiekette, Verriegelungslogik |
 | [bill_of_materials.md](bill_of_materials.md) | Stückliste mit Material, Profil, Dichtung, Lager, Verbindungstechnik, Gewicht |
+| `visual/slideroof-van.html` | Maßstäbliches 3D-Modell am Van mit Ablauf und Ansichten |
 | [risk_analysis.md](risk_analysis.md) | FMEA-Risikotabelle, Gegenmaßnahmen, Empfehlung manuell/motorisch, Fachplaner-Pflichten |
 | `calc/slideroof_calc.py` | Parametrische Berechnung von Geometrie, Gewicht, Rollen- und Schienenlasten, Wind, Füßen, Haltern, Fahrt und PV |
 | `calc/results.md` | Ergebnisse Serienvariante Aluminium (automatisch erzeugt) |
+| `calc/results_1740.md` | Ergebnisse Variante 1740 mit drittem Modul fest in der Kassette (`params_1740.json`) |
 | `calc/results_leichtbau.md` | Ergebnisse Leichtbauvariante (CFK-Profile), Parameter in `calc/params_leichtbau.json` |
 | `calc/test_slideroof_calc.py` | Plausibilitätstests (Gleichgewicht, Geometrie, Verschattung) |
 
@@ -79,6 +81,32 @@ Produktmanagement bestätigt werden:
 | Halter-Auftrieb bei Fahrt (130 km/h) | ≈ 1,5 kN vorn + 1,5 kN hinten | – | Fachplaner/Prüfung |
 
 Alle Werte stehen in [calc/results.md](calc/results.md).
+
+## Variante 1740: drittes Modul fest in der Kassette
+
+Ausgefahren ist die Kassette leer. Ihre Innenfläche von 1.429 × 2.430 mm nimmt ein drittes
+2.260 × 1.219-Modul auf, das fest im Kassettenboden liegt. Eingefahren liegen die beiden Flügel
+geschützt darüber, ausgefahren liegt es frei und lädt mit.
+
+| Größe | 1160 (2 Module) | 1740 (3 Module) |
+|---|---:|---:|
+| PV ausgefahren / bei Fahrt | 1.160 / 580 Wp | **1.740** / 580 Wp |
+| Modulfläche | 5,51 m² | 8,26 m² |
+| Kassettenhöhe / Fahrzeughöhe + | 110 / 140 mm | 150 / 180 mm |
+| Gesamtgewicht (Alu) | 62 kg | 73 kg |
+| Kippmoment um die Drehachse | 341 Nm | 262 Nm (Kassettenmodul wirkt als Gegengewicht) |
+| Fahrt 130 km/h: Halter vorn | 1,50 kN | 1,55 kN |
+| Crash 10 g | 5,8 kN | 6,9 kN |
+
+Die Variante bringt 50 % mehr Leistung für 11 kg und 40 mm Höhe. Neue Punkte dafür:
+- **Entwässerung:** Bei 7° Neigung fällt auch das Kassettenmodul nach außen. Die Frontschwelle
+  braucht Ablaufschlitze bzw. eine Rinne unter der Austrittskante des Innenflügels.
+- **Kratzschutz:** 6–8 mm Luft zwischen Außenflügel-Unterseite und Kassettenmodul, Gleitpads an
+  der Rahmenunterseite.
+- **Dritter MPPT,** Trenner und Überspannungsschutz (electrical.md).
+- **Dachlast und Zulassung** mit 73 kg und +180 mm Höhe neu prüfen.
+
+Berechnung: `python3 slideroof_calc.py --params params_1740.json` → `calc/results_1740.md`.
 
 ## Empfehlung Marktstart
 
