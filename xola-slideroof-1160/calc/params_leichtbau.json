@@ -1,0 +1,19 @@
+{
+  "inner_side_profile_kg_m": 0.95,
+  "outer_side_profile_kg_m": 0.35,
+  "cross_beam_kg_m": 0.32,
+  "rib_count": 4,
+  "rib_kg_m": 0.15,
+  "hardware_kg_per_wing": 0.6,
+  "adhesive_kg_per_wing": 0.2,
+  "cassette_front_beam_kg_m": 1.3,
+  "cassette_rear_beam_kg_m": 0.6,
+  "cassette_side_kg_m": 0.75,
+  "cassette_underside_kg_m2": 0.0,
+  "cassette_stringer_kg_m": 0.5,
+  "cassette_hardware_kg": 2.2,
+  "foot_mass_kg": 1.6,
+  "cross_beam_i_mm4": 60000,
+  "alu_e_mpa": 110000,
+  "alu_f0_mpa": 400
+}
