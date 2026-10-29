@@ -8,10 +8,18 @@ an der Markisenposition aus. Sie bilden ein 2,50 m ausladendes PV-Vordach mit **
 > `calc/slideroof_calc.py`. Sie ersetzen **keine** statische Berechnung durch einen Fachplaner
 > und keine Fahrzeug- oder Produktprüfung (siehe [risk_analysis.md](risk_analysis.md#5-fachplaner--und-prüfpflichten)).
 
+> **Aktueller Leitentwurf: Hochkant-Variante 3480** (3 Module hochkant im Flügel plus 3 fest in der
+> Kassette, Dach 3,81 × 2,48 m wie eine Standardmarkise, 3.480 Wp ausgefahren, 1.740 Wp während der Fahrt).
+> Details in [hochkant.md](hochkant.md). Die folgenden Abschnitte beschreiben den ersten Konzeptstand im
+> Querformat (1160/1740). Mechanik-, Elektrik- und Risikogrundlagen gelten sinngemäß weiter.
+
 ## Projektstruktur
 
 | Datei | Inhalt |
 |---|---|
+| [hochkant.md](hochkant.md) | **Leitentwurf** Hochkant-Variante 3480/1740: Prinzip, Mechanik, Elektrik, neue Risiken, Variantenvergleich |
+| `calc/hochkant_calc.py` | Berechnung der Hochkant-Variante (`results_hochkant_3480.md`, `results_hochkant_1740.md`) |
+| `calc/results_2320.md`, `results_3480.md` | Querformat mit 2 Modulen nebeneinander (nur lange Vans) |
 | [requirements.md](requirements.md) | Anforderungen mit IDs, Zielwerte, Erfüllungsstatus, offene Punkte |
 | [mechanics.md](mechanics.md) | Ansichten und Schnitte, Teleskopmechanik, Modulträger, Kassette und Adapter, Abdichtung, Stützfüße, Lastpfade, Bedienablauf |
 | [electrical.md](electrical.md) | PV-Schema, MPPT, Trenner, Überspannungsschutz, Potentialausgleich, Energiekette, Verriegelungslogik |

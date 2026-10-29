@@ -90,6 +90,29 @@ class CassetteModuleTest(unittest.TestCase):
         self.assertLess(b, a)
 
 
+class HochkantTest(unittest.TestCase):
+    def setUp(self):
+        import hochkant_calc as hk
+        self.hk = hk
+
+    def test_standard_awning_size_and_legal_width(self):
+        g = self.hk.run(self.hk.HParams())["geometry"]
+        self.assertGreaterEqual(g["wing_y_mm"], 3500)        # Markisenbreite 3,5-4,0 m
+        self.assertGreaterEqual(g["projection_mm"], 2300)
+        self.assertTrue(g["fits_legal_width"])
+        self.assertEqual(g["pv_wp"], 3480)
+        self.assertEqual(g["pv_wp_driving"], 1740)
+
+    def test_full_extension_keeps_overlap(self):
+        g = self.hk.run(self.hk.HParams())["geometry"]
+        self.assertGreater(g["stage_overlap_mm"], 900)
+
+    def test_without_fixed_modules(self):
+        r = self.hk.run(self.hk.parse_set(self.hk.HParams(), ["fixed_modules=false"]))
+        self.assertEqual(r["geometry"]["pv_wp"], 1740)
+        self.assertLess(r["masses"]["total_kg"], self.hk.run(self.hk.HParams())["masses"]["total_kg"])
+
+
 class ElectricalTest(unittest.TestCase):
     def test_cold_voc_higher_and_below_100v(self):
         el = run(Params())["electrical"]
