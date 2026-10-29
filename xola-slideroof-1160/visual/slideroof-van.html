@@ -1,0 +1,666 @@
+<title>Xola SlideRoof am Van</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Kopfzeile, grosse 3D-Buehne mit Bedienleiste, darunter Ablauf + Kennwerte in zwei Spalten */
+:root {
+  --bg: #f1f3f2; --fg: #1b2228; --muted: #5d6871; --line: #d3d9dc; --panel: #ffffff;
+  --accent: #c27413; --accent-soft: #f6e6cf;
+  --scene: #e6ebee; --ground: #d9ded6; --groundline: #c8cfc5; --van: #f7f8f7; --vanline: #67717b;
+  --glass: #33424f; --alu: #b6bec5; --module: #1d3452; --cell: #5476a0; --tire: #24282b;
+  --person: #8b7d70; --shadow: rgba(28, 38, 48, 0.2); --label-bg: rgba(255,255,255,0.92); --label-fg: #1b2228;
+  --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1418; --fg: #e3e8eb; --muted: #94a0a9; --line: #29333a; --panel: #161d22;
+    --accent: #e3a04c; --accent-soft: #3a2c19;
+    --scene: #131a1f; --ground: #1d242a; --groundline: #283139; --van: #cfd4d7; --vanline: #39424a;
+    --glass: #1a252e; --alu: #8c959d; --module: #24456f; --cell: #6189b6; --tire: #0b0d0e;
+    --person: #a09386; --shadow: rgba(0, 0, 0, 0.38); --label-bg: rgba(22,29,34,0.92); --label-fg: #e3e8eb;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1418; --fg: #e3e8eb; --muted: #94a0a9; --line: #29333a; --panel: #161d22;
+  --accent: #e3a04c; --accent-soft: #3a2c19;
+  --scene: #131a1f; --ground: #1d242a; --groundline: #283139; --van: #cfd4d7; --vanline: #39424a;
+  --glass: #1a252e; --alu: #8c959d; --module: #24456f; --cell: #6189b6; --tire: #0b0d0e;
+  --person: #a09386; --shadow: rgba(0, 0, 0, 0.38); --label-bg: rgba(22,29,34,0.92); --label-fg: #e3e8eb;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 40px; display: grid; gap: 22px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: 0; font-family: var(--font-display); font-stretch: 78%; font-weight: 800; font-size: clamp(30px, 5vw, 50px); line-height: 1.02; letter-spacing: -0.01em; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 64ch; }
+.stage { background: var(--scene); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.canvas-box { position: relative; }
+canvas { display: block; width: 100%; touch-action: none; cursor: grab; }
+canvas.dragging { cursor: grabbing; }
+.views { position: absolute; top: 12px; left: 12px; display: flex; gap: 2px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
+.views button { border: 0; background: transparent; color: var(--muted); font: 600 13px/1 var(--font-body); padding: 7px 11px; border-radius: 6px; cursor: pointer; }
+.views button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.hint { position: absolute; right: 12px; top: 14px; font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px 16px; border-top: 1px solid var(--line); background: var(--panel); }
+.play { font: 700 15px/1 var(--font-display); font-stretch: 88%; letter-spacing: 0.01em; background: var(--accent); color: #fff; border: 0; border-radius: 7px; padding: 11px 18px; cursor: pointer; min-width: 132px; }
+.slider { flex: 1 1 260px; display: grid; gap: 4px; min-width: 0; }
+.slider input { width: 100%; accent-color: var(--accent); }
+.phase { font-family: var(--font-mono); font-size: 13px; color: var(--fg); }
+label.toggle { display: flex; gap: 6px; align-items: center; font-size: 14px; color: var(--muted); cursor: pointer; }
+button:focus-visible, input:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cols { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; }
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr; } .hint { display: none; } }
+section h2 { margin: 0 0 10px; font-family: var(--font-display); font-stretch: 85%; font-size: 20px; font-weight: 700; }
+ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: s; }
+ol.steps li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 1px solid transparent; color: var(--muted); min-width: 0; }
+ol.steps li::before { counter-increment: s; content: counter(s); font: 500 13px/24px var(--font-mono); width: 24px; height: 24px; text-align: center; border-radius: 50%; border: 1px solid var(--line); }
+ol.steps li strong { color: var(--fg); font-weight: 600; display: block; }
+ol.steps li.on { background: var(--accent-soft); border-color: var(--accent); color: var(--fg); }
+ol.steps li.on::before { background: var(--accent); border-color: var(--accent); color: #fff; }
+ol.steps li.done::before { content: "✓"; color: var(--accent); }
+dl.specs { margin: 0; display: grid; grid-template-columns: auto 1fr; border-top: 1px solid var(--line); }
+dl.specs dt, dl.specs dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); }
+dl.specs dt { color: var(--muted); padding-right: 16px; }
+dl.specs dd { font-family: var(--font-mono); font-size: 14px; text-align: right; font-variant-numeric: tabular-nums; }
+.note { font-size: 13px; color: var(--muted); margin: 0; max-width: 80ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Konzeptvisualisierung · maßstäblich · Sprinter L2H2-Klasse</div>
+    <h1>Xola SlideRoof 1160</h1>
+    <p class="lede">Zwei 580-Wp-Module fahren wie bei einem Ausziehtisch aus der flachen Dachkassette, werden auf zwei Füße gestellt und um 7° nach außen geneigt. So entsteht ein 2,50 m tiefes Solar-Vordach über der Schiebetür.</p>
+  </header>
+
+  <div class="stage">
+    <div class="canvas-box">
+      <canvas id="scene" tabindex="0" aria-label="3D-Modell des Vans mit ausgefahrenem Solar-Markisendach"></canvas>
+      <div class="views" role="group" aria-label="Ansicht">
+        <button id="v-iso" aria-pressed="true">3D</button>
+        <button id="v-rear" aria-pressed="false">Heck</button>
+        <button id="v-side" aria-pressed="false">Seite</button>
+        <button id="v-top" aria-pressed="false">Oben</button>
+      </div>
+      <div class="hint" id="hint">Ziehen zum Drehen</div>
+    </div>
+    <div class="controls">
+      <button class="play" id="play">Einfahren</button>
+      <div class="slider">
+        <input type="range" id="phase" min="0" max="1000" value="1000" aria-label="Ablauf von eingefahren bis Betrieb">
+        <div class="phase" id="phase-label">Betrieb · 7° Neigung · 1.160 Wp</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="labels" checked> Beschriftung</label>
+    </div>
+  </div>
+
+  <div class="cols">
+    <section>
+      <h2>Ablauf am Stellplatz</h2>
+      <ol class="steps" id="steps">
+        <li data-i="0"><span><strong>Fahrstellung</strong>Kassette verriegelt, nur 140 mm Aufbau. Das obere Modul liegt frei und lädt während der Fahrt.</span></li>
+        <li data-i="1"><span><strong>Auskurbeln</strong>Beide Flügel laufen im Synchronlauf 2:1 aus. Am Ende fallen die Bolzen ein.</span></li>
+        <li data-i="2"><span><strong>Füße ausklappen</strong>Die zwei Füße klappen von unter dem Außenflügel nach unten.</span></li>
+        <li data-i="3"><span><strong>Füße ausziehen, Heringe setzen</strong>Teleskop 2,24–2,84 m, jede Seite einzeln einstellbar.</span></li>
+        <li data-i="4"><span><strong>Neigung einstellen</strong>Füße kürzen: Das Dach kippt um die Halterachse auf 5, 7 oder 10°, und Regen läuft nach außen ab.</span></li>
+      </ol>
+    </section>
+    <section>
+      <h2>Kennwerte</h2>
+      <dl class="specs">
+        <dt>PV-Leistung</dt><dd>2 × 580 = 1.160 Wp</dd>
+        <dt>Modulfläche</dt><dd>5,51 m²</dd>
+        <dt>Ausladung × Breite</dt><dd>2,50 × 2,43 m</dd>
+        <dt>Kassette (Dach)</dt><dd>1,49 × 2,49 m · 110 mm</dd>
+        <dt>Fahrzeughöhe zusätzlich</dt><dd>+140 mm</dd>
+        <dt>Neigung</dt><dd>0 / 5 / 7 / 10°</dd>
+        <dt>Stützfüße</dt><dd>2,24 – 2,84 m</dd>
+        <dt>Gewicht (Alu / CFK)</dt><dd>≈ 62 / 48 kg</dd>
+        <dt>Betrieb bis</dt><dd>Bft 5, Heringe gesetzt</dd>
+      </dl>
+    </section>
+  </div>
+  <p class="note">Maßstäbliches Modell nach dem Konzeptstand der Berechnung (calc/results.md). Das Fahrzeug ist vereinfacht dargestellt. Das Bild ist keine Konstruktionszeichnung.</p>
+</div>
+
+<script>
+(() => {
+  const D = Math.PI / 180;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  // ---------- Geometrie (mm), x = nach aussen, y = Fahrzeuglaengs (0 = Heck), z = hoch ----------
+  const G = {
+    vanW: 2000, vanL: 5930, roofZ: 2750,
+    casX0: -1489, casY0: 1755, casLen: 2490, casZb: 2780, casH: 110,
+    wingLen: 1409, innerW: 2430, outerW: 2310, tail: 160, edge: 15, modX: 1219, modY: 2260,
+    stow0: -1454, strokeInner: 1294, strokeOuter: 2543,
+    pivot: { x: 0, z: 2790 }, footFold: 1100
+  };
+  const profile = [[0, 400], [0, 2750], [4750, 2750], [5050, 2600], [5400, 1900], [5930, 1100], [5930, 400]];
+
+  // ---------- Zustand ----------
+  const VIEWS = {
+    iso:  { yaw: -38, pitch: 24 },
+    rear: { yaw: 0, pitch: 0 },
+    side: { yaw: -90, pitch: 0 },
+    top:  { yaw: -90, pitch: 90 }
+  };
+  let view = "iso", cam = { ...VIEWS.iso }, s = 1, showLabels = true;
+  let anim = null, colors = {};
+
+  const canvas = document.getElementById("scene");
+  const ctx = canvas.getContext("2d");
+
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    const keys = ["scene", "ground", "groundline", "van", "vanline", "glass", "alu", "module", "cell", "tire", "person", "shadow", "label-bg", "label-fg", "accent", "fg", "muted"];
+    keys.forEach(k => colors[k] = cs.getPropertyValue("--" + k).trim());
+  }
+  function rgb(c) {
+    if (c.startsWith("#")) { const n = parseInt(c.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+    const m = c.match(/[\d.]+/g); return m ? m.slice(0, 3).map(Number) : [128, 128, 128];
+  }
+  const LIGHT = norm([0.42, -0.38, 0.82]);
+  function shade(c, n, amb = 0.62) {
+    const k = amb + (1 - amb) * Math.max(0, dot(n, LIGHT));
+    const [r, g, b] = rgb(c);
+    return `rgb(${Math.round(r * k)},${Math.round(g * k)},${Math.round(b * k)})`;
+  }
+
+  // ---------- Vektoren ----------
+  function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+  function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+  function add(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+  function mul(a, k) { return [a[0] * k, a[1] * k, a[2] * k]; }
+  function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+  function norm(a) { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
+
+  // ---------- Kamera ----------
+  let C = {};
+  function setupCam() {
+    const y = cam.yaw * D, p = cam.pitch * D;
+    C = { cy: Math.cos(y), sy: Math.sin(y), cp: Math.cos(p), sp: Math.sin(p) };
+    C.fwd = [C.sy * C.cp, C.cy * C.cp, -C.sp];
+  }
+  function proj(q) {
+    const x1 = q[0] * C.cy - q[1] * C.sy, y1 = q[0] * C.sy + q[1] * C.cy;
+    return { u: x1, v: q[2] * C.cp + y1 * C.sp, d: y1 * C.cp - q[2] * C.sp };
+  }
+  let W = 0, H = 0, scale = 1, ox = 0, oy = 0;
+  function fit() {
+    const pts = [];
+    for (const x of [-2000, 2600]) for (const y of [0, G.vanL]) for (const z of [0, 2960]) pts.push(proj([x, y, z]));
+    let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+    pts.forEach(p => { u0 = Math.min(u0, p.u); u1 = Math.max(u1, p.u); v0 = Math.min(v0, p.v); v1 = Math.max(v1, p.v); });
+    const padTop = 56, pad = 24;
+    scale = Math.min((W - 2 * pad) / (u1 - u0), (H - padTop - pad) / (v1 - v0));
+    ox = W / 2 - scale * (u0 + u1) / 2;
+    oy = padTop + (H - padTop - pad) / 2 + scale * (v0 + v1) / 2;
+  }
+  function scr(q) { const p = proj(q); return [ox + p.u * scale, oy - p.v * scale, p.d]; }
+
+  // ---------- Szene aufbauen ----------
+  // Ein "Face" = Polygon (Weltpunkte), Normale, Farbe, Optionen
+  function quadFaces(c, color, opt = {}) {
+    // c: 8 Ecken eines Quaders in Reihenfolge [x0y0z0, x1y0z0, x1y1z0, x0y1z0, x0y0z1, x1y0z1, x1y1z1, x0y1z1]
+    const F = [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]];
+    const ctr = c.reduce((a, b) => add(a, b), [0, 0, 0]).map(v => v / 8);
+    return F.map(f => {
+      const pts = f.map(i => c[i]);
+      let n = norm(cross(sub(pts[1], pts[0]), sub(pts[2], pts[0])));
+      const fc = pts.reduce((a, b) => add(a, b), [0, 0, 0]).map(v => v / 4);
+      if (dot(n, sub(fc, ctr)) < 0) n = mul(n, -1);
+      return { pts, n, color, ...opt };
+    });
+  }
+  function box(x0, x1, y0, y1, z0, z1, color, T = null, opt = {}) {
+    let c = [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]];
+    if (T) c = c.map(T);
+    return quadFaces(c, color, opt);
+  }
+  function beam(p0, p1, w, color, opt = {}) {
+    const a = norm(sub(p1, p0));
+    let u = cross(a, [1, 0, 0]); if (Math.hypot(...u) < 0.1) u = cross(a, [0, 1, 0]);
+    u = mul(norm(u), w / 2); const v = mul(norm(cross(a, u)), w / 2);
+    const c = [sub(sub(p0, u), v), add(sub(p0, v), u), add(add(p0, u), v), add(sub(p0, u), v)];
+    const c2 = c.map(q => add(q, sub(p1, p0)));
+    return quadFaces([...c, ...c2], color, opt);
+  }
+  function tiltT(t) {
+    const ct = Math.cos(t * D), st = Math.sin(t * D);
+    return q => {
+      const dx = q[0] - G.pivot.x, dz = q[2] - G.pivot.z;
+      return [G.pivot.x + dx * ct + dz * st, q[1], G.pivot.z - dx * st + dz * ct];
+    };
+  }
+
+  function phases(s) {
+    return {
+      f: clamp(s / 0.5), g: clamp((s - 0.5) / 0.15), e: clamp((s - 0.65) / 0.15), t: clamp((s - 0.8) / 0.2) * 7
+    };
+  }
+
+  function build(s) {
+    const ph = phases(s);
+    const T = tiltT(ph.t);
+    const faces = [];
+    const anchors = {};
+    const yC0 = G.casY0, yC1 = G.casY0 + G.casLen;
+    const zb = G.casZb, zt = G.casZb + G.casH;
+
+    // Kassette (kippt mit)
+    faces.push(...box(G.casX0, G.casX0 + 25, yC0, yC1, zb, zt, colors.alu, T, { sub: 400 }));
+    faces.push(...box(G.casX0 + 25, 0, yC0, yC0 + 25, zb, zt, colors.alu, T, { sub: 400 }));
+    faces.push(...box(G.casX0 + 25, 0, yC1 - 25, yC1, zb, zt, colors.alu, T, { sub: 400 }));
+    faces.push(...box(G.casX0 + 25, 0, yC0 + 25, yC1 - 25, zb, zb + 6, colors.alu, T, { sub: 400 }));
+    faces.push(...box(-35, 0, yC0 + 25, yC1 - 25, zb, zb + 16, colors.alu, T, { sub: 400 }));
+    anchors.cassette = T([G.casX0 + 12, yC0 + 300, zt]);
+
+    // Fluegel
+    const xi0 = G.stow0 + ph.f * G.strokeInner;
+    const xo0 = G.stow0 + ph.f * G.strokeOuter;
+    const yi0 = yC0 + 30, yi1 = yi0 + G.innerW;
+    const yo0 = yi0 + (G.innerW - G.outerW) / 2, yo1 = yo0 + G.outerW;
+    function wing(x0, y0, y1, zf, key) {
+      const x1 = x0 + G.wingLen;
+      const mx0 = x0 + G.tail + G.edge, mx1 = mx0 + G.modX;
+      const my0 = (y0 + y1) / 2 - G.modY / 2, my1 = my0 + G.modY;
+      const z = zf + 33, zt = zf + 30;
+      // Rahmen ohne Deckflaeche; sichtbarer Rahmenrand als Streifen um das Modul
+      faces.push(...box(x0, x1, y0, y1, zf, zt, colors.alu, T, { sub: 350 }).filter((_, i) => i !== 1));
+      const strip = (a0, a1, b0, b1) => {
+        const pts = [[a0, b0, zt], [a1, b0, zt], [a1, b1, zt], [a0, b1, zt]].map(T);
+        faces.push({ pts, n: norm(cross(sub(pts[1], pts[0]), sub(pts[3], pts[0]))), color: colors.alu, sub: 350, top: true });
+      };
+      strip(x0, mx0, y0, y1); strip(mx1, x1, y0, y1); strip(mx0, mx1, y0, my0); strip(mx0, mx1, my1, y1);
+      const pts = [[mx0, my0, z], [mx1, my0, z], [mx1, my1, z], [mx0, my1, z]].map(T);
+      faces.push({ pts, n: norm(cross(sub(pts[1], pts[0]), sub(pts[3], pts[0]))), color: colors.module, module: true, cells: [12, 12] });
+      anchors[key] = T([(mx0 + mx1) / 2, (my0 + my1) / 2, z]);
+      return { x0, y0, y1 };
+    }
+    wing(xo0, yo0, yo1, 2798, "outer");
+    wing(xi0, yi0, yi1, 2838, "inner");
+
+    // Regenrinne an der Aussenkante
+    const xe = xo0 + G.wingLen;
+    faces.push(...box(xe, xe + 40, yo0, yo1, 2795, 2822, colors.alu, T, { sub: 400 }));
+    anchors.front = T([xe + 40, (yo0 + yo1) / 2, 2810]);
+
+    // Markisenhalter (fest am Fahrzeug)
+    [150, 850, 1640, 2340].forEach(dy => faces.push(...box(0, 45, yC0 + dy, yC0 + dy + 60, 2640, 2795, colors.vanline)));
+    anchors.pivot = [22, yC0 + 2340, 2780];
+
+    // Neigungsstreben am Innenende
+    [yC0 + 120, yC1 - 120].forEach(y => {
+      const top = T([G.casX0 + 40, y, zb]);
+      const bot = [G.casX0 + 40, y, G.roofZ];
+      if (top[2] - bot[2] > 8) faces.push(...beam(bot, top, 22, colors.vanline));
+      faces.push(...box(G.casX0 + 15, G.casX0 + 65, y - 30, y + 30, G.roofZ, G.roofZ + 12, colors.vanline));
+    });
+
+    // Stuetzfuesse
+    if (ph.f > 0.98) {
+      [[yo0 + 60, 1], [yo1 - 60, -1]].forEach(([y, sgn], i) => {
+        const hinge = T([xe - 30, y, 2796]);
+        const a = ph.g * 90 * D;
+        const dir = norm([0, sgn * Math.cos(a), -Math.sin(a)]);
+        const full = hinge[2] - 12;
+        const L = ph.e > 0 ? lerp(G.footFold, full, ph.e) : G.footFold;
+        const L1 = Math.min(L, G.footFold * 0.98);
+        const p1 = add(hinge, mul(dir, L1));
+        const p2 = add(hinge, mul(dir, L));
+        faces.push(...beam(hinge, p1, 42, colors.alu));
+        if (L > L1 + 5) faces.push(...beam(p1, p2, 32, colors.alu));
+        if (ph.e > 0.98) faces.push(...box(p2[0] - 100, p2[0] + 100, p2[1] - 100, p2[1] + 100, 0, 12, colors.vanline));
+        if (i === 0) anchors.foot = add(hinge, mul(dir, L * 0.55));
+      });
+    }
+
+    // Massfigur 1,80 m
+    const px = 1350, py = yC0 + 900;
+    faces.push(...box(px - 120, px + 120, py - 90, py + 90, 0, 860, colors.person));
+    faces.push(...box(px - 150, px + 150, py - 110, py + 110, 860, 1520, colors.person));
+    faces.push(...box(px - 90, px + 90, py - 95, py + 95, 1560, 1800, colors.person));
+    anchors.person = [px + 90, py, 1800];
+
+    // Schatten-Umrisse (Sonne leicht von aussen-hinten)
+    const sun = [0.16, 0.22, -1];
+    const toGround = q => [q[0] + sun[0] * q[2], q[1] + sun[1] * q[2]];
+    const shadows = [];
+    const vanBox = [];
+    for (const x of [-2000, 0]) for (const y of [0, G.vanL]) for (const z of [0, G.roofZ]) vanBox.push(toGround([x, y, z]));
+    shadows.push(hull(vanBox));
+    const wingPts = [];
+    [[xi0, yi0, yi1, 2868], [xo0, yo0, yo1, 2828]].forEach(([x0, y0, y1, z]) => {
+      const pts = [[x0, y0, z], [x0 + G.wingLen, y0, z], [x0 + G.wingLen, y1, z], [x0, y1, z]].map(T).map(toGround);
+      shadows.push(hull(pts));
+    });
+    shadows.push(hull([[px - 150, py - 110], [px + 150, py + 110], [px + 150, py - 110], [px - 150, py + 110]].map(([x, y]) => toGround([x, y, 1800])).concat([[px - 150, py - 110], [px + 150, py + 110], [px + 150, py - 110], [px - 150, py + 110]])));
+
+    const front = T([xe, yC0, 2822]);
+    return { faces, anchors, shadows, ph, frontX: front[0], reach: xe, yC0 };
+  }
+
+  function hull(pts) {
+    const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const lo = [], up = [];
+    for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+    for (const q of p.reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+    return lo.slice(0, -1).concat(up.slice(0, -1));
+  }
+
+  // Van als Prisma + Raeder + Aufkleber (Fenster)
+  function vanFaces() {
+    const faces = [];
+    const xs = [-G.vanW, 0];
+    const side = x => profile.map(([y, z]) => [x, y, z]);
+    faces.push({ pts: side(0), n: [1, 0, 0], color: colors.van, key: "sideR" });
+    faces.push({ pts: side(-G.vanW).reverse(), n: [-1, 0, 0], color: colors.van });
+    for (let i = 0; i < profile.length; i++) {
+      const [y0, z0] = profile[i], [y1, z1] = profile[(i + 1) % profile.length];
+      let n = norm([0, z1 - z0, -(y1 - y0)]);
+      const mid = [0, (y0 + y1) / 2 - 3000, (z0 + z1) / 2 - 1500];
+      if (dot(n, mid) < 0) n = mul(n, -1);
+      faces.push({ pts: [[xs[1], y0, z0], [xs[0], y0, z0], [xs[0], y1, z1], [xs[1], y1, z1]], n, color: colors.van, key: i === 0 ? "rear" : null });
+    }
+    return faces;
+  }
+  function wheelFaces() {
+    const out = [];
+    const seg = 14, r = 370;
+    [[1300], [5000]].forEach(([yc]) => {
+      [[-1990, -1760], [-240, -10]].forEach(([x0, x1]) => {
+        for (let i = 0; i < seg; i++) {
+          const a0 = i / seg * 2 * Math.PI, a1 = (i + 1) / seg * 2 * Math.PI;
+          const p = a => [yc + Math.cos(a) * r, 370 + Math.sin(a) * r];
+          const [ya, za] = p(a0), [yb, zb] = p(a1);
+          const n = norm([0, Math.cos((a0 + a1) / 2), Math.sin((a0 + a1) / 2)]);
+          out.push({ pts: [[x0, ya, za], [x1, ya, za], [x1, yb, zb], [x0, yb, zb]], n, color: colors.tire });
+        }
+      });
+    });
+    return out;
+  }
+  const circ = (yc, zc, r, x = 4, n = 28) => Array.from({ length: n }, (_, i) => [x, yc + Math.cos(i / n * 2 * Math.PI) * r, zc + Math.sin(i / n * 2 * Math.PI) * r]);
+  function sideDecals() {
+    const x = 3;
+    return [
+      { pts: [[x, 500, 1650], [x, 1900, 1650], [x, 1900, 2350], [x, 500, 2350]], fill: colors.glass },
+      { pts: [[x, 2700, 1650], [x, 3800, 1650], [x, 3800, 2350], [x, 2700, 2350]], fill: colors.glass },
+      { pts: [[x, 2600, 430], [x, 3900, 430], [x, 3900, 2550], [x, 2600, 2550]], stroke: colors.vanline },
+      { pts: [[x, 4800, 1500], [x, 4800, 2380], [x, 5150, 2380], [x, 5450, 1700], [x, 5450, 1500]], fill: colors.glass },
+      { pts: [[x, 4700, 430], [x, 5600, 430], [x, 5600, 1450], [x, 4700, 1450]], stroke: colors.vanline },
+      { pts: [[x, 0, 700], [x, 5930, 700]], stroke: colors.vanline, line: true },
+      ...[1300, 5000].flatMap(yc => [
+        { pts: circ(yc, 370, 430), fill: colors.vanline },
+        { pts: circ(yc, 370, 370, 6), fill: colors.tire },
+        { pts: circ(yc, 370, 210, 8), fill: colors.alu }
+      ])
+    ];
+  }
+  function rearDecals() {
+    const y = -3;
+    return [
+      { pts: [[-1880, y, 1550], [-1060, y, 1550], [-1060, y, 2380], [-1880, y, 2380]], fill: colors.glass },
+      { pts: [[-940, y, 1550], [-120, y, 1550], [-120, y, 2380], [-940, y, 2380]], fill: colors.glass },
+      { pts: [[-1000, y, 420], [-1000, y, 2650]], stroke: colors.vanline, line: true },
+      { pts: [[-1985, y, 900], [-1890, y, 900], [-1890, y, 1500], [-1985, y, 1500]], fill: "#b8352b" },
+      { pts: [[-110, y, 900], [-15, y, 900], [-15, y, 1500], [-110, y, 1500]], fill: "#b8352b" },
+      { pts: [[-2000, y, 300], [0, y, 300], [0, y, 500], [-2000, y, 500]], fill: colors.tire }
+    ];
+  }
+
+  // ---------- Zeichnen ----------
+  const visible = f => dot(f.n, C.fwd) < -1e-6;
+
+  function subdivide(f, nU, nV) {
+    const [A, B, Cc, Dd] = f.pts;
+    const P = (u, v) => add(mul(add(mul(A, 1 - u), mul(B, u)), 1 - v), mul(add(mul(Dd, 1 - u), mul(Cc, u)), v));
+    const out = [];
+    for (let i = 0; i < nU; i++) for (let j = 0; j < nV; j++) {
+      const u0 = i / nU, u1 = (i + 1) / nU, v0 = j / nV, v1 = (j + 1) / nV;
+      out.push({ ...f, pts: [P(u0, v0), P(u1, v0), P(u1, v1), P(u0, v1)],
+        edges: [j === 0, i === nU - 1, j === nV - 1, i === 0] });
+    }
+    return out;
+  }
+  function expand(f) {
+    if (f.module) return subdivide(f, f.cells[0], f.cells[1]);
+    if (f.sub && f.pts.length === 4) {
+      const lu = Math.hypot(...sub(f.pts[1], f.pts[0])), lv = Math.hypot(...sub(f.pts[3], f.pts[0]));
+      return subdivide(f, Math.max(1, Math.ceil(lu / f.sub)), Math.max(1, Math.ceil(lv / f.sub)));
+    }
+    return [f];
+  }
+  function pathOf(pts) {
+    const sp = pts.map(scr);
+    ctx.beginPath(); sp.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath();
+    return sp;
+  }
+  function drawFace(f) {
+    const sp = pathOf(f.pts);
+    const col = shade(f.color, f.n, f.module ? 0.75 : 0.62);
+    ctx.fillStyle = col; ctx.fill();
+    ctx.lineWidth = 0.8; ctx.strokeStyle = col; ctx.stroke();
+    if (f.module) { ctx.lineWidth = 0.6; ctx.strokeStyle = colors.cell; ctx.stroke(); }
+    const edges = f.edges || f.pts.map(() => true);
+    ctx.lineWidth = f.module ? 1.1 : 0.9; ctx.strokeStyle = colors.vanline;
+    ctx.beginPath();
+    for (let i = 0; i < sp.length; i++) if (edges[i]) { const a = sp[i], b = sp[(i + 1) % sp.length]; ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
+    ctx.stroke();
+  }
+  function drawDecal(d) {
+    const sp = d.pts.map(scr);
+    ctx.beginPath(); sp.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+    if (!d.line) ctx.closePath();
+    if (d.fill) { ctx.fillStyle = d.fill; ctx.fill(); }
+    if (d.stroke) { ctx.lineWidth = 1.1; ctx.strokeStyle = d.stroke; ctx.stroke(); }
+  }
+
+  function render() {
+    const dpr = window.devicePixelRatio || 1;
+    W = canvas.clientWidth; H = Math.max(300, Math.round(W * (W < 600 ? 0.9 : 0.58)));
+    if (canvas.height !== Math.round(H * dpr) || canvas.width !== Math.round(W * dpr)) {
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); canvas.style.height = H + "px";
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    setupCam(); fit();
+    ctx.fillStyle = colors.scene; ctx.fillRect(0, 0, W, H);
+
+    const sc = build(s);
+
+    // Boden
+    if (cam.pitch > 0.5) {
+      const g = [[-3200, -1500, 0], [4600, -1500, 0], [4600, 7600, 0], [-3200, 7600, 0]];
+      pathOf(g); ctx.fillStyle = colors.ground; ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = colors.groundline; ctx.beginPath();
+      for (let x = -3000; x <= 4600; x += 1000) { const a = scr([x, -1500, 0]), b = scr([x, 7600, 0]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
+      for (let y = -1000; y <= 7600; y += 1000) { const a = scr([-3200, y, 0]), b = scr([4600, y, 0]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
+      ctx.stroke();
+      // Schatten (eine Fuellung -> keine Doppelabdunklung)
+      ctx.beginPath();
+      sc.shadows.forEach(h => {
+        h.forEach(([x, y], i) => { const p = scr([x, y, 0]); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); });
+        ctx.closePath();
+      });
+      ctx.fillStyle = colors.shadow; ctx.fill("nonzero");
+    } else {
+      const a = scr([-3200, -1500, 0]), b = scr([4600, 7600, 0]);
+      ctx.fillStyle = colors.ground; ctx.fillRect(0, a[1], W, H - a[1]);
+      ctx.strokeStyle = colors.vanline; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(0, a[1]); ctx.lineTo(W, a[1]); ctx.stroke();
+    }
+
+    // Van: Raeder, Koerper (Rueckseiten weg), Aufkleber
+    wheelFaces().filter(visible).sort((a, b) => depthOf(b) - depthOf(a)).forEach(drawFace);
+    const vf = vanFaces().filter(visible).sort((a, b) => depthOf(b) - depthOf(a));
+    vf.forEach(drawFace);
+    if (vf.some(f => f.key === "sideR")) sideDecals().forEach(drawDecal);
+    if (vf.some(f => f.key === "rear")) rearDecals().forEach(drawDecal);
+
+    // Anbau: sortiert nach Tiefe (Maler-Algorithmus auf feinen Teilflaechen)
+    const items = [];
+    sc.faces.forEach(f => { if (f.module || f.top ? dot(f.n, C.fwd) < 0 : visible(f)) expand(f).forEach(p => items.push(p)); });
+    items.forEach(p => p._d = depthOf(p));
+    items.sort((a, b) => b._d - a._d).forEach(drawFace);
+
+    // Mass: Ausladung
+    const dimText = "Ausladung " + (sc.reach / 1000).toFixed(2).replace(".", ",") + " m";
+    if (sc.ph.f > 0.98 && cam.pitch > 0.5 && view !== "top") dimLine([0, sc.yC0 - 450, 0], [sc.frontX, sc.yC0 - 450, 0], dimText);
+    if (sc.ph.f > 0.98 && view === "top") dimLine([0, sc.yC0 - 300, 3000], [sc.frontX, sc.yC0 - 300, 3000], dimText);
+    if (cam.pitch < 0.5 && cam.yaw === 0 && sc.ph.f > 0.98) dimLine([0, 0, 3150], [sc.frontX, 0, 3150], dimText);
+
+    if (showLabels) labels(sc);
+  }
+  function depthOf(f) { let d = 0; f.pts.forEach(q => d += proj(q).d); return d / f.pts.length; }
+
+  function dimLine(a, b, text) {
+    const A = scr(a), B = scr(b);
+    ctx.strokeStyle = colors.accent; ctx.fillStyle = colors.accent; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke();
+    const ang = Math.atan2(B[1] - A[1], B[0] - A[0]);
+    [[A, ang], [B, ang + Math.PI]].forEach(([P, an]) => {
+      ctx.beginPath(); ctx.moveTo(P[0], P[1]);
+      ctx.lineTo(P[0] + Math.cos(an + 0.35) * 9, P[1] + Math.sin(an + 0.35) * 9);
+      ctx.lineTo(P[0] + Math.cos(an - 0.35) * 9, P[1] + Math.sin(an - 0.35) * 9); ctx.closePath(); ctx.fill();
+    });
+    ctx.save(); ctx.translate((A[0] + B[0]) / 2, (A[1] + B[1]) / 2);
+    let r = ang; if (r > Math.PI / 2) r -= Math.PI; if (r < -Math.PI / 2) r += Math.PI;
+    ctx.rotate(r); ctx.font = "500 12px " + getComputedStyle(document.body).getPropertyValue("--font-mono");
+    ctx.textAlign = "center"; ctx.fillText(text, 0, -7); ctx.restore();
+  }
+
+  function labels(sc) {
+    const mono = getComputedStyle(document.documentElement).getPropertyValue("--font-body");
+    const list = [];
+    const ph = sc.ph;
+    list.push(["inner", ph.f < 0.02 ? "Modul 1 · 580 Wp · lädt bei Fahrt" : "Innenflügel · Modul 1 · 580 Wp"]);
+    if (ph.f > 0.55) list.push(["outer", "Außenflügel · Modul 2 · 580 Wp"]);
+    list.push(["cassette", "Kassette · 110 mm hoch"]);
+    if (view !== "top") list.push(["pivot", "Drehachse auf Markisenhalter"]);
+    if (ph.e > 0.3 && view !== "top") list.push(["foot", "Stützfuß 2,24–2,84 m"]);
+    if (view !== "top") list.push(["person", "1,80 m"]);
+    if (ph.t > 0.5 && view !== "top") list.push(["front", "Rinne · " + ph.t.toFixed(0) + "° Gefälle"]);
+    if (W < 600) { const keep = ["inner", "outer", "foot", "person"]; for (let i = list.length - 1; i >= 0; i--) if (!keep.includes(list[i][0])) list.splice(i, 1); }
+
+    // Bildschirm-Schwerpunkt fuer Ausweichrichtung
+    const pts = list.map(([k]) => scr(sc.anchors[k]));
+    const cx = W / 2, cy = H / 2 + 20;
+    ctx.font = "600 12.5px " + mono; ctx.textBaseline = "middle";
+    const boxes = [];
+    list.forEach(([k, text], i) => {
+      const [ax, ay] = pts[i];
+      let dx = ax - cx, dy = ay - cy; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+      let lx = ax + dx * 70, ly = ay + dy * 46 - 10;
+      const tw = ctx.measureText(text).width + 14, th = 22;
+      let bx = dx >= 0 ? lx : lx - tw;
+      bx = clamp(bx, 6, W - tw - 6); ly = clamp(ly, 60, H - th);
+      for (const b of boxes) if (bx < b[0] + b[2] && bx + tw > b[0] && ly - th / 2 < b[1] + b[3] / 2 && ly + th / 2 > b[1] - b[3] / 2) ly = b[1] + (dy >= 0 ? th + 4 : -(th + 4));
+      boxes.push([bx, ly, tw, th]);
+      ctx.strokeStyle = colors.fg; ctx.globalAlpha = 0.55; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(dx >= 0 ? bx : bx + tw, ly); ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.fillStyle = colors.accent; ctx.beginPath(); ctx.arc(ax, ay, 3.2, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = colors["label-bg"]; roundRect(bx, ly - th / 2, tw, th, 5); ctx.fill();
+      ctx.strokeStyle = colors.accent; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = colors["label-fg"]; ctx.textAlign = "left"; ctx.fillText(text, bx + 7, ly + 0.5);
+    });
+  }
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  // ---------- UI ----------
+  const slider = document.getElementById("phase");
+  const playBtn = document.getElementById("play");
+  const phaseLabel = document.getElementById("phase-label");
+  const steps = [...document.querySelectorAll("#steps li")];
+  const hint = document.getElementById("hint");
+
+  function phaseText(s) {
+    const p = phases(s);
+    if (s <= 0.001) return [0, "Fahrstellung · eingefahren · Modul 1 lädt"];
+    if (p.f < 1) return [1, `Auskurbeln · ${Math.round(p.f * 2500 / 10) * 10} mm Auszug`];
+    if (p.g < 1) return [2, "Füße ausklappen"];
+    if (p.e < 1) return [3, "Füße ausziehen · Heringe setzen"];
+    if (p.t < 6.99) return [4, `Neigung einstellen · ${p.t.toFixed(1).replace(".", ",")}°`];
+    return [5, "Betrieb · 7° Neigung · 1.160 Wp"];
+  }
+  function updateUI() {
+    const [i, txt] = phaseText(s);
+    phaseLabel.textContent = txt;
+    steps.forEach((li, k) => { li.classList.toggle("on", k === Math.min(i, 4) && i < 5); li.classList.toggle("done", k < i); });
+    slider.value = Math.round(s * 1000);
+    if (!anim) playBtn.textContent = s >= 0.999 ? "Einfahren" : "Ausfahren";
+  }
+  function frame() { render(); updateUI(); }
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  playBtn.addEventListener("click", () => {
+    if (anim) { cancelAnimationFrame(anim.id); anim = null; updateUI(); return; }
+    const target = s >= 0.999 ? 0 : 1;
+    if (reduce) { s = target; frame(); return; }
+    const dur = 8000 * Math.abs(target - s) + 200, s0 = s, t0 = performance.now();
+    playBtn.textContent = "Anhalten";
+    const step = now => {
+      const k = clamp((now - t0) / dur);
+      s = lerp(s0, target, k);
+      frame();
+      if (k < 1) anim.id = requestAnimationFrame(step); else { anim = null; updateUI(); }
+    };
+    anim = { id: requestAnimationFrame(step) };
+  });
+  slider.addEventListener("input", () => { if (anim) { cancelAnimationFrame(anim.id); anim = null; } s = slider.value / 1000; frame(); });
+  document.getElementById("labels").addEventListener("change", e => { showLabels = e.target.checked; frame(); });
+
+  const vb = { iso: "v-iso", rear: "v-rear", side: "v-side", top: "v-top" };
+  Object.entries(vb).forEach(([k, id]) => document.getElementById(id).addEventListener("click", () => setView(k)));
+  function setView(k) {
+    view = k; cam = { ...VIEWS[k] };
+    Object.entries(vb).forEach(([kk, id]) => document.getElementById(id).setAttribute("aria-pressed", String(kk === k)));
+    hint.hidden = k !== "iso";
+    frame();
+  }
+
+  let drag = null;
+  canvas.addEventListener("pointerdown", e => {
+    if (view !== "iso") setView("iso");
+    drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch };
+    canvas.setPointerCapture(e.pointerId); canvas.classList.add("dragging");
+  });
+  canvas.addEventListener("pointermove", e => {
+    if (!drag) return;
+    cam.yaw = clamp(drag.yaw - (e.clientX - drag.x) * 0.35, -172, -8);
+    cam.pitch = clamp(drag.pitch + (e.clientY - drag.y) * 0.25, 6, 70);
+    render();
+  });
+  const end = () => { drag = null; canvas.classList.remove("dragging"); };
+  canvas.addEventListener("pointerup", end); canvas.addEventListener("pointercancel", end);
+  canvas.addEventListener("keydown", e => {
+    if (view !== "iso") return;
+    if (e.key === "ArrowLeft") cam.yaw = clamp(cam.yaw + 5, -172, -8);
+    else if (e.key === "ArrowRight") cam.yaw = clamp(cam.yaw - 5, -172, -8);
+    else if (e.key === "ArrowUp") cam.pitch = clamp(cam.pitch + 4, 6, 70);
+    else if (e.key === "ArrowDown") cam.pitch = clamp(cam.pitch - 4, 6, 70);
+    else return;
+    e.preventDefault(); render();
+  });
+
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const retheme = () => { readColors(); frame(); };
+  mq.addEventListener?.("change", retheme);
+  new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  new ResizeObserver(() => frame()).observe(canvas);
+  document.fonts?.ready.then(frame);
+
+  readColors(); frame();
+})();
+</script>
