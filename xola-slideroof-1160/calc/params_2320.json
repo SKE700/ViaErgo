@@ -1,0 +1,7 @@
+{
+  "modules_per_wing": 2,
+  "n_feet": 3,
+  "cross_beam_i_mm4": 73365,
+  "bracket_allow_uplift_n": 3000,
+  "n_brackets": 6
+}

@@ -7,7 +7,7 @@
 | Groesse | Wert |
 |---|---:|
 | PV-Leistung ausgefahren / eingefahren (Fahrt) | 1740 / 580 Wp |
-| Anzahl Module / MPPT | 3 |
+| Anzahl Module / Laufschienen | 3 / 2 |
 | Drittes Modul passt in Kassette | ja |
 | Solarflaeche (Module) | 8.26 m2 |
 | Dachflaeche ausgefahren (inkl. Rahmen) | 6.07 m2 |
@@ -52,8 +52,8 @@
 |---|---:|
 | Moment Stufe 1 (Kassette -> Innenfluegel) | 473 Nm |
 | Moment Stufe 2 (Innen -> Aussenfluegel) | 114 Nm |
-| Rolle Stufe 1 vorn / hinten je Seite | 3381 / 3076 N |
-| Rolle Stufe 2 vorn / hinten je Seite | 900 / 742 N |
+| Rolle Stufe 1 vorn / hinten je Laufschiene | 3381 / 3076 N |
+| Rolle Stufe 2 vorn / hinten je Laufschiene | 900 / 742 N |
 | Erf. statische Tragzahl C0 je Rolle (S=2.0) | 6762 N |
 | Aequiv. Schubladenlast (Mitte) Schienenpaar | 39 kg |
 | Endverriegelung Moment je Seite (inkl. Stoss) | 308 Nm |
@@ -120,7 +120,8 @@
 |---|---:|
 | Voc bei -20 C | 57.9 V |
 | Bemessungsstrom 1,25 x Isc | 17.9 A |
+| Strang-Voc kalt je Fluegel (Module in Reihe) | 57.9 V -> MPPT-Klasse 100 V |
 | Spannungsfall 6.0 m / 4.0 mm2 | 0.72 V (1.6 %) |
-| MPPT-Ladestrom je Modul @ 12V | 40 A |
-| MPPT-Ladestrom je Modul @ 24V | 20 A |
-| MPPT-Ladestrom je Modul @ 48V | 10 A |
+| MPPT-Ladestrom je Fluegel @ 12V | 40 A |
+| MPPT-Ladestrom je Fluegel @ 24V | 20 A |
+| MPPT-Ladestrom je Fluegel @ 48V | 10 A |

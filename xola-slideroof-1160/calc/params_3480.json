@@ -1,0 +1,7 @@
+{
+  "modules_per_wing": 2,
+  "cassette_module": true,
+  "n_feet": 3,
+  "bracket_allow_uplift_n": 3000,
+  "n_brackets": 6
+}

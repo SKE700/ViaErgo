@@ -37,7 +37,9 @@ class Params:
     module_wid_x_mm: float = 1219.0      # Auszugsrichtung
     module_mass_kg: float = 9.1
     module_wp: float = 580.0
-    n_modules: int = 2
+    n_modules: int = 2                      # Anzahl Fluegel (je Fluegel modules_per_wing Module)
+    modules_per_wing: int = 1               # 2 = zwei Module nebeneinander in Fahrzeuglaengsrichtung
+    module_gap_y_mm: float = 20.0           # Fuge zwischen Modulen nebeneinander (Mittelschiene darunter)
     # Elektrische Werte: NICHT im Datenblatt-Auszug -> ANNAHMEN, vor Freigabe ersetzen
     module_voc_v: float = 52.0
     module_isc_a: float = 14.3
@@ -148,12 +150,18 @@ class Params:
 # --------------------------------------------------------------------------
 # Geometrie
 # --------------------------------------------------------------------------
+def module_row_y(p: Params) -> float:
+    """Laenge der Modulreihe eines Fluegels in Fahrzeuglaengsrichtung."""
+    return p.modules_per_wing * p.module_len_y_mm + (p.modules_per_wing - 1) * p.module_gap_y_mm
+
+
 def geometry(p: Params) -> dict:
     wing_x = p.module_wid_x_mm + 2 * p.frame_edge_mm + p.tail_mm
-    inner_w_y = p.module_len_y_mm + 2 * (p.outer_side_profile_w_mm
+    row_y = module_row_y(p)
+    inner_w_y = row_y + 2 * (p.outer_side_profile_w_mm
                                          + p.inner_side_profile_w_mm
                                          + p.side_clearance_mm) + p.cable_side_extra_mm
-    outer_w_y = p.module_len_y_mm + 2 * p.outer_side_profile_w_mm
+    outer_w_y = row_y + 2 * p.outer_side_profile_w_mm
     cas_x = wing_x + p.cassette_clearance_x_mm + p.cassette_front_beam_mm + p.cassette_rear_beam_mm
     cas_y = inner_w_y + 2 * p.side_clearance_mm + 2 * p.cassette_side_wall_mm
 
@@ -175,7 +183,7 @@ def geometry(p: Params) -> dict:
                   - x_foot / 1000 * math.sin(th))
     foot_top_z_flat = p.mount_height_m - p.outer_wing_drop_mm / 1000 - 0.0
 
-    n_mod = p.n_modules + (1 if p.cassette_module else 0)
+    n_mod = (p.n_modules + (1 if p.cassette_module else 0)) * p.modules_per_wing
     cas_h = p.cassette_height_mm + (p.cassette_module_level_mm if p.cassette_module else 0.0)
     solar_area = n_mod * p.module_len_y_mm * p.module_wid_x_mm / 1e6
     roof_area = outer_x1 / 1000 * inner_w_y / 1000
@@ -188,7 +196,7 @@ def geometry(p: Params) -> dict:
         "cassette_height_mm": cas_h,
         "vehicle_height_increase_mm": cas_h + p.bracket_offset_mm,
         "cassette_module_fits": (cas_x - p.cassette_front_beam_mm - p.cassette_rear_beam_mm >= p.module_wid_x_mm
-                                 and cas_y - 2 * p.cassette_side_wall_mm >= p.module_len_y_mm),
+                                 and cas_y - 2 * p.cassette_side_wall_mm >= row_y),
         "stroke_inner_mm": inner_x0 - stowed_x0,
         "stroke_outer_mm": outer_x0 - stowed_x0,
         "inner_wing_x_mm": (inner_x0, inner_x1),
@@ -206,12 +214,13 @@ def geometry(p: Params) -> dict:
         "foot_len_flat_m": foot_top_z_flat,
         "foot_len_range_m": (foot_top_z - p.ground_tolerance_m,
                              foot_top_z_flat + p.ground_tolerance_m),
-        "foot_max_folded_len_m": outer_w_y / 2 / 1000 - 0.05,
+        "foot_max_folded_len_m": outer_w_y / (2 * p.modules_per_wing) / 1000 - 0.05,
         "solar_area_m2": solar_area,
         "roof_area_m2": roof_area,
         "pv_wp": n_mod * p.module_wp,
         "n_modules_total": n_mod,
-        "pv_wp_stowed": p.module_wp,                       # nur der obere Innenfluegel liegt frei
+        "pv_wp_stowed": p.module_wp * p.modules_per_wing,  # nur der obere Innenfluegel liegt frei
+        "n_tracks": p.modules_per_wing + 1,                # Laufschienen (Seiten + Mittelschienen)
         "x_strut_mm": -(cas_x - p.strut_from_inner_end_mm),
         "roller_spacing_mm": p.tail_mm - 2 * p.roller_inset_mm,
     }
@@ -223,22 +232,25 @@ def geometry(p: Params) -> dict:
 def masses(p: Params, g: dict) -> dict:
     wx = g["wing_len_x_mm"] / 1000
     rib_len = wx - p.tail_mm / 1000
-    inner_frame = (2 * wx * p.inner_side_profile_kg_m
+    mpw = p.modules_per_wing
+    tracks = g["n_tracks"]                                 # Seitenprofile + Mittelschienen
+    seal = mpw * 2 * (p.module_len_y_mm + p.module_wid_x_mm) / 1000 * p.seal_kg_m
+    inner_frame = (tracks * wx * p.inner_side_profile_kg_m
                    + 2 * g["inner_wing_width_y_mm"] / 1000 * p.cross_beam_kg_m
-                   + p.rib_count * rib_len * p.rib_kg_m
-                   + 2 * (p.module_len_y_mm + p.module_wid_x_mm) / 1000 * p.seal_kg_m
-                   + p.adhesive_kg_per_wing + p.hardware_kg_per_wing)
-    outer_frame = (2 * wx * p.outer_side_profile_kg_m
+                   + mpw * p.rib_count * rib_len * p.rib_kg_m
+                   + seal + mpw * p.adhesive_kg_per_wing + mpw * p.hardware_kg_per_wing)
+    outer_frame = (tracks * wx * p.outer_side_profile_kg_m
                    + 2 * g["outer_wing_width_y_mm"] / 1000 * p.cross_beam_kg_m
-                   + p.rib_count * rib_len * p.rib_kg_m
-                   + 2 * (p.module_len_y_mm + p.module_wid_x_mm) / 1000 * p.seal_kg_m
-                   + p.adhesive_kg_per_wing + p.hardware_kg_per_wing)
+                   + mpw * p.rib_count * rib_len * p.rib_kg_m
+                   + seal + mpw * p.adhesive_kg_per_wing + mpw * p.hardware_kg_per_wing)
     cx, cy = g["cassette_x_mm"] / 1000, g["cassette_y_mm"] / 1000
     cassette = (cy * p.cassette_front_beam_kg_m + cy * p.cassette_rear_beam_kg_m
                 + 2 * cx * p.cassette_side_kg_m + cx * cy * p.cassette_underside_kg_m2
-                + cx * p.cassette_stringer_kg_m + p.cassette_hardware_kg)
+                + cx * p.cassette_stringer_kg_m * mpw
+                + (mpw - 1) * cx * p.cassette_side_kg_m            # Mittel-Laufschiene
+                + p.cassette_hardware_kg * (1 + 0.5 * (mpw - 1)))
     items = {
-        f"Module Fluegel ({p.n_modules}x)": p.n_modules * p.module_mass_kg,
+        f"Module Fluegel ({p.n_modules * mpw}x)": p.n_modules * mpw * p.module_mass_kg,
         "Traegerrahmen Innenfluegel": inner_frame,
         "Traegerrahmen Aussenfluegel": outer_frame,
         "Kassette inkl. Laufprofile/Gelenke": cassette,
@@ -250,13 +262,13 @@ def masses(p: Params, g: dict) -> dict:
     }
     fixed = 0.0
     if p.cassette_module:
-        fixed = p.module_mass_kg + p.cassette_module_support_kg
+        fixed = mpw * (p.module_mass_kg + p.cassette_module_support_kg)
         items["Kassettenmodul fest inkl. Auflage"] = fixed
     if p.fabric_wing:
         items["Stofffluegel (optional)"] = p.fabric_mass_kg
     total = sum(items.values())
-    inner_wing = p.module_mass_kg + inner_frame
-    outer_wing = p.module_mass_kg + outer_frame
+    inner_wing = mpw * p.module_mass_kg + inner_frame
+    outer_wing = mpw * p.module_mass_kg + outer_frame
     return {
         "items": items,
         "total_kg": total,
@@ -286,7 +298,7 @@ def rollers(p: Params, g: dict, m: dict) -> dict:
     w_i = m["inner_wing_kg"] * G
     w_o = m["outer_wing_with_feet_kg"] * G
 
-    k = p.racking_factor * p.dyn_factor / 2                 # je Seite
+    k = p.racking_factor * p.dyn_factor / g["n_tracks"]     # je Laufschiene
     # Stufe 2: Aussenfluegel haengt am Innenfluegel
     m2 = w_o * (xc_o - x_exit2)
     f2_rear = m2 / s
@@ -405,7 +417,7 @@ def statics(p: Params, g: dict, m: dict) -> dict:
 def cross_beam(p: Params, g: dict, st: dict) -> dict:
     """Querholm Aussenfluegel (Spannweite zwischen Seitenprofilen/Fuessen)
     unter Winddruck + Eigengewicht, Einfeldtraeger mit Gleichstreckenlast."""
-    span = g["outer_wing_width_y_mm"]
+    span = g["outer_wing_width_y_mm"] / p.modules_per_wing  # Mittelschiene/-fuss teilt die Spannweite
     trib = g["wing_len_x_mm"] / 2 / 1000                     # m Einzugsbreite
     p_tot = p.cp_down * st["q_Pa"] + p.module_mass_kg * G / (p.module_len_y_mm * p.module_wid_x_mm / 1e6)
     w = p_tot * trib / 1000                                  # N/mm
@@ -450,9 +462,12 @@ def electrical(p: Params) -> dict:
     dv = r * p.module_imp_a
     mppt = {}
     for vb, vcharge in ((12, 14.4), (24, 28.8), (48, 57.6)):
-        i = p.module_wp / vcharge
+        i = p.module_wp * p.modules_per_wing / vcharge   # ein MPPT je Fluegel (Module in Reihe)
         mppt[f"{vb}V"] = i
+    string_voc = voc_cold * p.modules_per_wing
     return {"voc_cold_V": voc_cold, "isc_design_A": i_design,
+            "string_voc_cold_V": string_voc,
+            "mppt_pv_class_V": 100 if string_voc < 95 else 150 if string_voc < 142 else 250,
             "cable_loss_pct": dv / p.module_vmp_v * 100, "cable_dv_V": dv,
             "mppt_charge_current_A": mppt}
 
@@ -496,7 +511,7 @@ def report(r: dict, md: bool = False) -> str:
 
     h("Ausfahrgeometrie"); table_head()
     row("PV-Leistung ausgefahren / eingefahren (Fahrt)", f"{g['pv_wp']:.0f} / {g['pv_wp_stowed']:.0f} Wp")
-    row("Anzahl Module / MPPT", f"{g['n_modules_total']}")
+    row("Anzahl Module / Laufschienen", f"{g['n_modules_total']} / {g['n_tracks']}")
     if p["cassette_module"]:
         row("Drittes Modul passt in Kassette", "ja" if g["cassette_module_fits"] else "NEIN")
     row("Solarflaeche (Module)", f"{g['solar_area_m2']:.2f} m2")
@@ -532,8 +547,8 @@ def report(r: dict, md: bool = False) -> str:
     h("Teleskopfuehrung (freier Kragzustand, Endlage, unverriegelt)"); table_head()
     row("Moment Stufe 1 (Kassette -> Innenfluegel)", f"{ro['moment_stage1_Nm']:.0f} Nm")
     row("Moment Stufe 2 (Innen -> Aussenfluegel)", f"{ro['moment_stage2_Nm']:.0f} Nm")
-    row("Rolle Stufe 1 vorn / hinten je Seite", f"{ro['stage1_front_roller_N_per_side']:.0f} / {ro['stage1_rear_roller_N_per_side']:.0f} N")
-    row("Rolle Stufe 2 vorn / hinten je Seite", f"{ro['stage2_front_roller_N_per_side']:.0f} / {ro['stage2_rear_roller_N_per_side']:.0f} N")
+    row("Rolle Stufe 1 vorn / hinten je Laufschiene", f"{ro['stage1_front_roller_N_per_side']:.0f} / {ro['stage1_rear_roller_N_per_side']:.0f} N")
+    row("Rolle Stufe 2 vorn / hinten je Laufschiene", f"{ro['stage2_front_roller_N_per_side']:.0f} / {ro['stage2_rear_roller_N_per_side']:.0f} N")
     row(f"Erf. statische Tragzahl C0 je Rolle (S={p['safety_static']})", f"{ro['required_C0_per_roller_N']:.0f} N")
     row("Aequiv. Schubladenlast (Mitte) Schienenpaar", f"{ro['equiv_drawer_load_kg_pair']:.0f} kg")
     row("Endverriegelung Moment je Seite (inkl. Stoss)", f"{ro['lock_moment_per_side_Nm']:.0f} Nm")
@@ -585,9 +600,10 @@ def report(r: dict, md: bool = False) -> str:
     h("Elektrik (Modul-Elektrowerte = ANNAHMEN)"); table_head()
     row(f"Voc bei {p['t_min_c']:.0f} C", f"{el['voc_cold_V']:.1f} V")
     row("Bemessungsstrom 1,25 x Isc", f"{el['isc_design_A']:.1f} A")
+    row("Strang-Voc kalt je Fluegel (Module in Reihe)", f"{el['string_voc_cold_V']:.1f} V -> MPPT-Klasse {el['mppt_pv_class_V']} V")
     row(f"Spannungsfall {p['cable_len_m']} m / {p['cable_mm2']} mm2", f"{el['cable_dv_V']:.2f} V ({el['cable_loss_pct']:.1f} %)")
     for k, v in el["mppt_charge_current_A"].items():
-        row(f"MPPT-Ladestrom je Modul @ {k}", f"{v:.0f} A")
+        row(f"MPPT-Ladestrom je Fluegel @ {k}", f"{v:.0f} A")
     return "\n".join(out) + "\n"
 
 
